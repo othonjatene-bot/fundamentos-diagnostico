@@ -109,7 +109,7 @@ textarea::placeholder{color:var(--accent-light);opacity:.6;}
   <div class="sum-section" id="sum-sec" style="display:none">
     <div class="sum-label">Diagnóstico gerado</div>
     <div class="sum-card" id="sum-card"></div>
-    <button class="btn-copy" id="btn-copy" onclick="copiar()">Copiar diagnóstico para enviar ao mentor</button>
+    <button class="btn-copy" id="btn-copy" onclick="copiar()">Copiar diagnóstico completo</button>
   </div>
 
   <div class="footer">
@@ -293,6 +293,15 @@ Responda APENAS com JSON válido. Sem markdown, sem texto adicional.`,
   });
   card.innerHTML=html;
   sec.scrollIntoView({behavior:"smooth"});
+
+  // Envia e-mail automaticamente ao mentor
+  try{
+    await fetch("/api/enviar-email",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({sintese,answers})
+    });
+  }catch(e){ console.warn("E-mail não enviado:",e); }
 }
 
 function copiar(){
