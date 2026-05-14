@@ -3,11 +3,13 @@ exports.handler = async function (event) {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
 
-  let sintese, answers;
+  let sintese, answers, assunto, modulo;
   try {
     const body = JSON.parse(event.body || "{}");
     sintese = body.sintese;
     answers = body.answers;
+    assunto = body.assunto || "Novo diagnóstico — cliente concluiu o Módulo 0";
+    modulo = body.modulo || "Módulo 0 — Onboarding & Diagnóstico Inicial";
   } catch (e) {
     return { statusCode: 400, body: JSON.stringify({ error: "Invalid body" }) };
   }
@@ -18,7 +20,7 @@ exports.handler = async function (event) {
 <div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;color:#1A1814;">
   <div style="border-bottom:2px solid #8B6F4E;padding-bottom:16px;margin-bottom:24px;">
     <p style="font-size:11px;font-weight:bold;letter-spacing:.12em;text-transform:uppercase;color:#8B6F4E;margin:0 0 6px;">Método Fundamentos</p>
-    <h1 style="font-size:22px;font-weight:300;margin:0;">Diagnóstico Inicial — Novo Cliente</h1>
+    <h1 style="font-size:22px;font-weight:300;margin:0;">${modulo} — Novo Cliente</h1>
   </div>
   ${sintese ? `
   <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -66,7 +68,7 @@ exports.handler = async function (event) {
     body: JSON.stringify({
       from: "Fundamentos <onboarding@resend.dev>",
       to: ["othonjatene@gmail.com"],
-      subject: "Novo diagnóstico — cliente concluiu o Módulo 0",
+      subject: assunto,
       html,
     }),
   });
