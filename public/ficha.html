@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fundamentos — Ficha de Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --off-white:#EDE9E1;--dark:#1A1814;--mid:#6B6760;
+  --accent:#8B6F4E;--accent-light:#C4A882;--line:rgba(26,24,20,0.1);
+  --serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',sans-serif;
+  --note-bg:#FEF8EC;--note-border:#f0d078;--note-color:#7a5c00;
+  --success-bg:#EDF7F0;--success-color:#1a6b3a;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--off-white);color:var(--dark);min-height:100vh;display:flex;justify-content:center;padding:2rem 1.25rem 5rem;}
+.container{width:100%;max-width:700px;}
+
+/* HEADER */
+.hdr{padding:2.5rem 0 1.5rem;border-bottom:1px solid var(--line);margin-bottom:2rem;}
+.badge{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:rgba(139,111,78,.1);padding:4px 12px;border-radius:20px;margin-bottom:.85rem;}
+.hdr-title{font-family:var(--serif);font-size:clamp(1.6rem,4vw,2.3rem);font-weight:300;line-height:1.15;margin-bottom:.65rem;}
+.hdr-title em{font-style:italic;color:var(--accent);}
+.hdr-sub{font-size:.88rem;font-weight:300;color:var(--mid);line-height:1.72;max-width:56ch;}
+
+/* PHASE LABELS */
+.phase-label{font-size:.68rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.75rem;}
+.phase-label::after{content:'';flex:1;height:1px;background:var(--accent-light);opacity:.4;}
+
+/* TEXTAREA */
+.ta-wrap{border:1px solid var(--line);background:#fff;padding:.85rem 1rem;transition:border-color .2s;}
+.ta-wrap:focus-within{border-color:var(--accent);}
+textarea{width:100%;min-height:180px;border:none;outline:none;background:transparent;font-family:var(--sans);font-size:.88rem;font-weight:300;line-height:1.65;color:var(--dark);resize:vertical;}
+textarea::placeholder{color:var(--accent-light);opacity:.6;}
+.ta-footer{display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px;border-top:1px solid var(--line);}
+.cc{font-size:11.5px;color:var(--accent-light);}
+
+/* PRIVACY */
+.privacy{font-size:.78rem;color:var(--mid);background:rgba(139,111,78,.05);border:1px solid var(--line);padding:.6rem .9rem;margin-top:.75rem;line-height:1.6;}
+.privacy strong{color:var(--accent);}
+
+/* BUTTONS */
+.btn{font-family:var(--sans);font-size:.77rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:.65rem 1.6rem;border:1px solid var(--dark);background:var(--dark);color:var(--off-white);cursor:pointer;transition:background .2s,border-color .2s;}
+.btn:hover{background:var(--accent);border-color:var(--accent);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-ghost{background:transparent;color:var(--dark);}
+.btn-ghost:hover{background:var(--dark);color:var(--off-white);}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--mid);padding:1rem 0;}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--accent-light);display:inline-block;animation:bc 1.1s infinite;margin-right:3px;}
+.dots span:nth-child(2){animation-delay:.18s;}
+.dots span:nth-child(3){animation-delay:.36s;}
+@keyframes bc{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-6px);opacity:1}}
+
+/* FICHA */
+.ficha{display:flex;flex-direction:column;gap:12px;}
+.bloco{border:1px solid var(--line);background:#fff;}
+.bloco-hdr{padding:.65rem 1rem;background:rgba(139,111,78,.05);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:.75rem;}
+.bloco-num{font-size:10px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-light);}
+.bloco-title{font-size:.88rem;font-weight:500;color:var(--dark);}
+.bloco-body{padding:.85rem 1rem;display:flex;flex-direction:column;gap:10px;}
+.field{display:flex;flex-direction:column;gap:4px;}
+.field-lbl{font-size:.68rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-light);}
+.field-inp{font-family:var(--sans);font-size:.88rem;font-weight:300;line-height:1.6;color:var(--dark);background:var(--off-white);border:1px solid var(--line);padding:.55rem .75rem;outline:none;transition:border-color .2s;resize:vertical;width:100%;}
+.field-inp:focus{border-color:var(--accent);}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+/* CHECKLIST */
+.chk-item{display:flex;align-items:flex-start;gap:10px;padding:.55rem 0;border-bottom:1px solid var(--line);cursor:pointer;}
+.chk-item:last-child{border-bottom:none;}
+.chk-box{width:16px;height:16px;border:1px solid var(--line);flex-shrink:0;margin-top:2px;display:flex;align-items:center;justify-content:center;background:#fff;transition:background .15s;}
+.chk-box.checked{background:var(--accent);border-color:var(--accent);}
+.chk-box.checked::after{content:'✓';font-size:10px;color:white;font-weight:500;}
+.chk-text{font-size:.85rem;font-weight:300;color:var(--dark);line-height:1.5;}
+
+/* MODULOS */
+.mod-item{display:flex;align-items:center;gap:10px;padding:.5rem 0;border-bottom:1px solid var(--line);cursor:pointer;}
+.mod-item:last-child{border-bottom:none;}
+.mod-radio{width:16px;height:16px;border:1px solid var(--line);border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:#fff;transition:background .15s;}
+.mod-radio.sel{background:var(--accent);border-color:var(--accent);}
+.mod-radio.sel::after{content:'';width:6px;height:6px;border-radius:50%;background:white;}
+.mod-badge{font-size:10px;font-weight:500;color:var(--accent);background:rgba(139,111,78,.1);padding:2px 8px;white-space:nowrap;}
+.mod-name{font-size:.85rem;font-weight:300;color:var(--dark);}
+
+/* EXPORT */
+.export-row{display:flex;align-items:center;gap:1rem;margin-top:1rem;flex-wrap:wrap;}
+.export-note{font-size:.78rem;color:var(--mid);font-weight:300;}
+
+/* SUCCESS */
+.success-msg{font-size:.82rem;color:var(--success-color);background:var(--success-bg);border:1px solid #b8e0c5;padding:.65rem .9rem;margin-top:.75rem;display:none;}
+
+/* FOOTER */
+.footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
+.footer-logo{font-family:var(--serif);font-size:1rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);}
+.footer-copy{font-size:.72rem;color:var(--mid);font-weight:300;}
+
+@media(max-width:600px){.field-row{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hdr">
+    <div class="badge">Módulo 0 — Onboarding</div>
+    <h1 class="hdr-title">Ficha de registro <em>automática.</em></h1>
+    <p class="hdr-sub">Cole a transcrição da sessão de onboarding. O agente extrai as informações e preenche a ficha. Você revisa, ajusta se necessário e exporta.</p>
+  </div>
+
+  <!-- FASE 1 -->
+  <div id="fase1" style="margin-bottom:2rem;">
+    <div class="phase-label">Fase 1 — Transcrição da sessão</div>
+    <div class="ta-wrap">
+      <textarea id="transcricao" placeholder="Cole aqui a transcrição completa da sessão de onboarding...&#10;&#10;Pode ser o texto exportado da gravação, do Google Meet, Zoom ou qualquer ferramenta de transcrição."></textarea>
+      <div class="ta-footer">
+        <span class="cc" id="cc">0 caracteres</span>
+        <button class="btn" id="btn-processar" onclick="processar()">Extrair e preencher →</button>
+      </div>
+    </div>
+    <div class="privacy"><strong>Privacidade:</strong> A transcrição é processada em tempo real e não é armazenada em nenhum servidor. Nenhum dado do cliente é salvo após o processamento.</div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading" style="display:none" class="loading">
+    <div class="dots"><span></span><span></span><span></span></div>
+    <span id="loading-msg">Lendo a transcrição...</span>
+  </div>
+
+  <!-- FASE 2 -->
+  <div id="fase2" style="display:none;">
+    <div class="phase-label">Fase 2 — Revisar e exportar</div>
+    <div class="ficha">
+
+      <!-- 01 -->
+      <div class="bloco">
+        <div class="bloco-hdr"><span class="bloco-num">01</span><span class="bloco-title">Identificação do cliente</span></div>
+        <div class="bloco-body">
+          <div class="field-row">
+            <div class="field"><div class="field-lbl">Nome do cliente</div><input class="field-inp" id="f-nome" type="text" placeholder="—"></div>
+            <div class="field"><div class="field-lbl">Empresa</div><input class="field-inp" id="f-empresa" type="text" placeholder="—"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><div class="field-lbl">Setor / segmento</div><input class="field-inp" id="f-setor" type="text" placeholder="—"></div>
+            <div class="field"><div class="field-lbl">Data da sessão</div><input class="field-inp" id="f-data" type="text" placeholder="DD/MM/AAAA"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 02 -->
+      <div class="bloco">
+        <div class="bloco-hdr"><span class="bloco-num">02</span><span class="bloco-title">Síntese do diagnóstico</span></div>
+        <div class="bloco-body">
+          <div class="field"><div class="field-lbl">Principal dor declarada</div><textarea class="field-inp" id="f-dor" rows="2" placeholder="—"></textarea></div>
+          <div class="field"><div class="field-lbl">Premissa dominante</div><textarea class="field-inp" id="f-premissa" rows="2" placeholder="—"></textarea></div>
+          <div class="field"><div class="field-lbl">Hipótese de causa raiz (visão do mentor)</div><textarea class="field-inp" id="f-hipotese" rows="2" placeholder="—"></textarea></div>
+        </div>
+      </div>
+
+      <!-- 03 -->
+      <div class="bloco">
+        <div class="bloco-hdr"><span class="bloco-num">03</span><span class="bloco-title">Sequência acordada</span></div>
+        <div class="bloco-body">
+          <div id="mod-list">
+            <div class="mod-item" onclick="selMod('1')"><div class="mod-radio" id="mr1"></div><span class="mod-badge">Módulo 1</span><span class="mod-name">Identidade Corporativa</span></div>
+            <div class="mod-item" onclick="selMod('2')"><div class="mod-radio" id="mr2"></div><span class="mod-badge">Módulo 2</span><span class="mod-name">Posicionamento</span></div>
+            <div class="mod-item" onclick="selMod('3')"><div class="mod-radio" id="mr3"></div><span class="mod-badge">Módulo 3</span><span class="mod-name">Estrutura Organizacional</span></div>
+            <div class="mod-item" onclick="selMod('4')"><div class="mod-radio" id="mr4"></div><span class="mod-badge">Módulo 4</span><span class="mod-name">Comercial & Crescimento</span></div>
+            <div class="mod-item" onclick="selMod('5')"><div class="mod-radio" id="mr5"></div><span class="mod-badge">Módulo 5</span><span class="mod-name">Cadência de Resultados</span></div>
+          </div>
+          <div class="field"><div class="field-lbl">Justificativa da escolha</div><textarea class="field-inp" id="f-just" rows="2" placeholder="—"></textarea></div>
+        </div>
+      </div>
+
+      <!-- 04 -->
+      <div class="bloco">
+        <div class="bloco-hdr"><span class="bloco-num">04</span><span class="bloco-title">Próximos passos</span></div>
+        <div class="bloco-body">
+          <div class="field-row">
+            <div class="field"><div class="field-lbl">Data da Sessão 1</div><input class="field-inp" id="f-ds1" type="text" placeholder="DD/MM/AAAA"></div>
+            <div class="field"><div class="field-lbl">Horário</div><input class="field-inp" id="f-hr" type="text" placeholder="HH:MM"></div>
+          </div>
+          <div class="field"><div class="field-lbl">Tarefa do cliente antes da Sessão 1</div><textarea class="field-inp" id="f-tarefa" rows="2" placeholder="—"></textarea></div>
+        </div>
+      </div>
+
+      <!-- 05 -->
+      <div class="bloco">
+        <div class="bloco-hdr"><span class="bloco-num">05</span><span class="bloco-title">Checklist de encerramento</span></div>
+        <div class="bloco-body">
+          <div class="chk-item" onclick="togChk('c1')"><div class="chk-box" id="c1"></div><span class="chk-text">Diagnóstico inicial preenchido e 1-pager recebido pelo mentor</span></div>
+          <div class="chk-item" onclick="togChk('c2')"><div class="chk-box" id="c2"></div><span class="chk-text">Método Fundamentos apresentado — módulos, sequência e lógica</span></div>
+          <div class="chk-item" onclick="togChk('c3')"><div class="chk-box" id="c3"></div><span class="chk-text">Devolutiva do diagnóstico realizada — dores, premissa e hipótese nomeadas</span></div>
+          <div class="chk-item" onclick="togChk('c4')"><div class="chk-box" id="c4"></div><span class="chk-text">Módulo inicial acordado com justificativa clara para o cliente</span></div>
+          <div class="chk-item" onclick="togChk('c5')"><div class="chk-box" id="c5"></div><span class="chk-text">Data e horário da Sessão 1 confirmados</span></div>
+          <div class="chk-item" onclick="togChk('c6')"><div class="chk-box" id="c6"></div><span class="chk-text">Comprometimento mútuo estabelecido — presença, honestidade, entregas</span></div>
+        </div>
+      </div>
+
+      <!-- 06 -->
+      <div class="bloco">
+        <div class="bloco-hdr"><span class="bloco-num">06</span><span class="bloco-title">Observações do mentor</span></div>
+        <div class="bloco-body">
+          <div class="field"><div class="field-lbl">O que chamou mais atenção nesta sessão</div><textarea class="field-inp" id="f-atencao" rows="3" placeholder="—"></textarea></div>
+          <div class="field"><div class="field-lbl">O que levar para a Sessão 1</div><textarea class="field-inp" id="f-levar" rows="3" placeholder="—"></textarea></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="export-row">
+      <button class="btn" onclick="exportar()">Copiar ficha completa</button>
+      <span class="export-note">Copia o conteúdo para arquivar no Drive do cliente</span>
+    </div>
+    <div class="success-msg" id="success-msg">✓ Ficha copiada com sucesso. Cole no documento do cliente no Drive.</div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-logo">Fundamentos</span>
+    <span class="footer-copy">Uso exclusivo do mentor</span>
+  </div>
+
+</div>
+<script>
+let modSel = null;
+
+function togChk(id){ document.getElementById(id).classList.toggle('checked'); }
+
+function selMod(n){
+  document.querySelectorAll('.mod-radio').forEach(r=>r.classList.remove('sel'));
+  document.getElementById('mr'+n).classList.add('sel');
+  modSel = n;
+}
+
+function setF(id,val){ const e=document.getElementById(id); if(e&&val) e.value=val; }
+
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+async function processar(){
+  const txt = document.getElementById('transcricao').value.trim();
+  if(txt.length < 80){ alert('Cole uma transcrição mais completa para o agente conseguir extrair as informações.'); return; }
+
+  document.getElementById('btn-processar').disabled = true;
+  document.getElementById('fase1').style.opacity = '0.5';
+  document.getElementById('loading').style.display = 'flex';
+
+  const msgs = ['Lendo a transcrição...','Identificando cliente e empresa...','Extraindo dores e premissas...','Analisando sequência acordada...','Finalizando a ficha...'];
+  let mi = 0;
+  const iv = setInterval(()=>{ mi=(mi+1)%msgs.length; document.getElementById('loading-msg').textContent=msgs[mi]; }, 1800);
+
+  try{
+    const result = await callAPI(txt);
+    clearInterval(iv);
+    document.getElementById('loading').style.display = 'none';
+    if(result) preencherFicha(result);
+    document.getElementById('fase2').style.display = 'block';
+    document.getElementById('fase2').scrollIntoView({behavior:'smooth'});
+  }catch(e){
+    clearInterval(iv);
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('btn-processar').disabled = false;
+    document.getElementById('fase1').style.opacity = '1';
+    alert('Erro ao processar a transcrição. Tente novamente.');
+  }
+}
+
+async function callAPI(transcricao){
+  const r = await fetch('/api/claude',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({
+      maxTokens: 1500,
+      system: `Você é um assistente do Método Fundamentos, consultoria de desenvolvimento organizacional para PMEs brasileiras.
+Analise a transcrição de uma sessão de onboarding e extraia as informações para preencher a ficha de registro.
+Responda APENAS com JSON válido, sem markdown, com os campos:
+- nome_cliente: string
+- empresa: string
+- setor: string
+- data_sessao: string (DD/MM/AAAA se mencionada, senão vazio)
+- dor_principal: string (2-3 frases sobre a principal dor declarada pelo cliente)
+- premissa_dominante: string (a crença central que guia as decisões do cliente)
+- hipotese_causa_raiz: string (hipótese de causa real — pode diferir da percepção do cliente)
+- modulo_inicial: string (número: "1", "2", "3", "4" ou "5" — o módulo acordado para começar)
+- justificativa_modulo: string (por que esse módulo como ponto de partida)
+- data_sessao1: string (data da próxima sessão, se mencionada)
+- horario_sessao1: string (horário, se mencionado)
+- tarefa_cliente: string (o que o cliente deve fazer antes da Sessão 1)
+- atencao: string (o que chamou mais atenção — reações, resistências, insights do mentor)
+- levar_sessao1: string (pontos para retomar, perguntas em aberto na Sessão 1)
+- checklist: array de números 1-6 que foram claramente confirmados na sessão`,
+      userMsg: `Transcrição da sessão de onboarding:\n\n${transcricao}`
+    })
+  });
+  if(!r.ok) return null;
+  const d = await r.json();
+  const raw = d.text || '{}';
+  try{ return JSON.parse(raw.replace(/```json|```/g,'').trim()); }catch(e){ return null; }
+}
+
+function preencherFicha(d){
+  setF('f-nome', d.nome_cliente);
+  setF('f-empresa', d.empresa);
+  setF('f-setor', d.setor);
+  setF('f-data', d.data_sessao);
+  setF('f-dor', d.dor_principal);
+  setF('f-premissa', d.premissa_dominante);
+  setF('f-hipotese', d.hipotese_causa_raiz);
+  setF('f-just', d.justificativa_modulo);
+  setF('f-ds1', d.data_sessao1);
+  setF('f-hr', d.horario_sessao1);
+  setF('f-tarefa', d.tarefa_cliente);
+  setF('f-atencao', d.atencao);
+  setF('f-levar', d.levar_sessao1);
+  if(d.modulo_inicial) selMod(String(d.modulo_inicial));
+  if(Array.isArray(d.checklist)) d.checklist.forEach(n=>{ const e=document.getElementById('c'+n); if(e) e.classList.add('checked'); });
+}
+
+function getV(id){ const e=document.getElementById(id); return e?e.value.trim():''; }
+
+function exportar(){
+  const modNomes={'1':'Identidade Corporativa','2':'Posicionamento','3':'Estrutura Organizacional','4':'Comercial & Crescimento','5':'Cadência de Resultados'};
+  const chkLabels=['Diagnóstico inicial preenchido e 1-pager recebido','Método Fundamentos apresentado','Devolutiva do diagnóstico realizada','Módulo inicial acordado','Data e horário da Sessão 1 confirmados','Comprometimento mútuo estabelecido'];
+  const checks = ['c1','c2','c3','c4','c5','c6'].map((id,i)=>`${document.getElementById(id)?.classList.contains('checked')?'✓':'☐'} ${chkLabels[i]}`).join('\n');
+  const modulo = modSel ? `Módulo ${modSel} — ${modNomes[modSel]}` : '(não selecionado)';
+
+  const txt = `FICHA DE REGISTRO — MÓDULO 0 — ONBOARDING\n${'='.repeat(48)}\n\nIDENTIFICAÇÃO\nCliente: ${getV('f-nome')||'—'}\nEmpresa: ${getV('f-empresa')||'—'}\nSetor: ${getV('f-setor')||'—'}\nData da sessão: ${getV('f-data')||'—'}\n\nSÍNTESE DO DIAGNÓSTICO\nDor principal:\n${getV('f-dor')||'—'}\n\nPremissa dominante:\n${getV('f-premissa')||'—'}\n\nHipótese de causa raiz:\n${getV('f-hipotese')||'—'}\n\nSEQUÊNCIA ACORDADA\nMódulo inicial: ${modulo}\nJustificativa: ${getV('f-just')||'—'}\n\nPRÓXIMOS PASSOS\nData Sessão 1: ${getV('f-ds1')||'—'}\nHorário: ${getV('f-hr')||'—'}\nTarefa do cliente: ${getV('f-tarefa')||'—'}\n\nCHECKLIST DE ENCERRAMENTO\n${checks}\n\nOBSERVAÇÕES DO MENTOR\nO que chamou atenção:\n${getV('f-atencao')||'—'}\n\nO que levar para a Sessão 1:\n${getV('f-levar')||'—'}`;
+
+  navigator.clipboard.writeText(txt).then(()=>{
+    const msg = document.getElementById('success-msg');
+    msg.style.display = 'block';
+    setTimeout(()=>msg.style.display='none', 4000);
+  }).catch(()=> alert('Selecione e copie o conteúdo manualmente.'));
+}
+
+document.getElementById('transcricao').addEventListener('input',()=>{
+  document.getElementById('cc').textContent = document.getElementById('transcricao').value.length + ' caracteres';
+});
+</script>
+</body>
+</html>
