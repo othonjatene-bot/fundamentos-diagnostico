@@ -2,9 +2,7 @@ exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
     return { statusCode: 405, body: "Method Not Allowed" };
   }
-
   const { system, userMsg, maxTokens } = JSON.parse(event.body || "{}");
-
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -19,10 +17,8 @@ exports.handler = async function (event) {
       messages: [{ role: "user", content: userMsg }],
     }),
   });
-
   const data = await response.json();
   const text = data.content?.find((b) => b.type === "text")?.text?.trim() || null;
-
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
