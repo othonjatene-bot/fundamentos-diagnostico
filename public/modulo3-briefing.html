@@ -66,6 +66,19 @@ textarea::placeholder{color:var(--accent-light);opacity:.6;}
 .footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;}
 .footer-logo{font-family:var(--serif);font-size:1rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);}
 .footer-copy{font-size:.72rem;color:var(--mid);font-weight:300;}
+/* IDENTIFICAÇÃO */
+.id-section{margin-bottom:2rem;}
+.id-label{font-size:.68rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.75rem;}
+.id-label::after{content:'';flex:1;height:1px;background:var(--accent-light);opacity:.4;}
+.id-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:1rem;}
+.id-field{display:flex;flex-direction:column;gap:5px;}
+.id-fl{font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);}
+.id-fi{font-family:var(--sans);font-size:.9rem;font-weight:300;color:var(--dark);background:#fff;border:1px solid var(--line);padding:.6rem .85rem;outline:none;transition:border-color .2s;width:100%;}
+.id-fi:focus{border-color:var(--accent);}
+.id-note{font-size:.78rem;color:var(--mid);line-height:1.6;margin-bottom:1rem;}
+.btn-start{font-family:var(--sans);font-size:.77rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:.65rem 1.6rem;border:1px solid var(--dark);background:var(--dark);color:var(--off-white);cursor:pointer;transition:background .2s;}
+.btn-start:hover{background:var(--accent);border-color:var(--accent);}
+@media(max-width:500px){.id-grid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -78,6 +91,31 @@ textarea::placeholder{color:var(--accent-light);opacity:.6;}
     <div class="prog-lbl" id="prog-lbl">Bloco 0 de 8</div>
   </div>
 
+  <div id="id-section" class="id-section">
+    <div class="id-label">Identificação</div>
+    <p class="id-note">Antes de começar, nos diga quem você é. Essas informações acompanham o briefing enviado ao mentor.</p>
+    <div class="id-grid">
+      <div class="id-field">
+        <div class="id-fl">Seu nome</div>
+        <input class="id-fi" id="id-nome" type="text" placeholder="Nome completo">
+      </div>
+      <div class="id-field">
+        <div class="id-fl">Empresa</div>
+        <input class="id-fi" id="id-empresa" type="text" placeholder="Nome da empresa">
+      </div>
+      <div class="id-field">
+        <div class="id-fl">Cargo / papel</div>
+        <input class="id-fi" id="id-cargo" type="text" placeholder="Ex: CEO, Sócio, Diretor Comercial">
+      </div>
+      <div class="id-field">
+        <div class="id-fl">Setor</div>
+        <input class="id-fi" id="id-setor" type="text" placeholder="Ex: Tecnologia, Serviços, Varejo">
+      </div>
+    </div>
+    <button class="btn-start" onclick="iniciar()">Começar o briefing →</button>
+  </div>
+
+  <div id="chat-section" style="display:none">
   <div class="chat" id="chat"></div>
   <div id="typing" style="display:none" class="typing"><span></span><span></span><span></span></div>
 
@@ -91,6 +129,7 @@ textarea::placeholder{color:var(--accent-light);opacity:.6;}
     </div>
     <p class="hint">Ctrl + Enter para enviar</p>
   </div>
+  </div><!-- fecha chat-section -->
 
   <div class="sum-section" id="sum-sec" style="display:none">
     <div class="sum-label">Resumo do briefing</div>
@@ -148,6 +187,23 @@ const BLOCOS=[
 ];
 
 let step=0,answers={},waitFU=false,fuEnviado=false;
+let idNome="",idEmpresa="",idCargo="",idSetor="";
+
+function iniciar(){
+  idNome=document.getElementById("id-nome").value.trim();
+  idEmpresa=document.getElementById("id-empresa").value.trim();
+  idCargo=document.getElementById("id-cargo").value.trim();
+  idSetor=document.getElementById("id-setor").value.trim();
+  if(!idNome||!idEmpresa){alert("Preencha pelo menos seu nome e a empresa antes de continuar.");return;}
+  document.getElementById("id-section").style.display="none";
+  document.getElementById("chat-section").style.display="block";
+  updProg();showTyping(true);
+  setTimeout(()=>{
+    showTyping(false);
+    addBubble(`Olá, ${idNome}! Este é o briefing de preparação para o Módulo Comercial da ${idEmpresa}. São 8 perguntas sobre como o seu comercial funciona hoje — aquisição, conversão, retenção e time. Não há respostas certas. Quanto mais honesto você for, mais direta e útil será nossa primeira sessão.`,"agent");
+    setTimeout(()=>addBubble(BLOCOS[0].q,"agent",BLOCOS[0].pill),400);
+  },900);
+}
 
 function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
@@ -299,7 +355,7 @@ Responda APENAS com JSON válido. Sem markdown.`,
           alertas_para_o_mentor:sintese.perguntas_para_aprofundar||[]
         }:null,
         answers,
-        assunto:"Novo briefing — Módulo 3 — Comercial",
+        assunto:`Novo briefing Comercial — ${idNome} (${idEmpresa})`,
         modulo:"Módulo 3 — Comercial"
       })
     });
@@ -319,6 +375,7 @@ Responda APENAS com JSON válido. Sem markdown.`,
 function gerarTexto(){
   const s=window._sintese,a=window._answers||answers;
   let txt="BRIEFING PRÉ-SESSÃO — MÓDULO 3 — COMERCIAL\n"+"=".repeat(48)+"\n\n";
+  txt+=`IDENTIFICAÇÃO\nNome: ${idNome}\nEmpresa: ${idEmpresa}${idCargo?"\nCargo: "+idCargo:""}${idSetor?"\nSetor: "+idSetor:""}\n\n`;
   if(s){
     txt+=`PERFIL DO NEGÓCIO\n${s.perfil_negocio||""}\n\n`;
     txt+=`COMO ADQUIRE CLIENTES\n${s.como_adquire||""}\n\n`;
@@ -352,15 +409,6 @@ function copiar(){
 function updCC(){document.getElementById("cc").textContent=document.getElementById("txt").value.length+" caracteres";}
 document.getElementById("txt").addEventListener("input",updCC);
 document.getElementById("txt").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey))enviar();});
-
-(function init(){
-  updProg();showTyping(true);
-  setTimeout(()=>{
-    showTyping(false);
-    addBubble("Olá! Este é o briefing de preparação para o Módulo Comercial. São 8 perguntas sobre como o seu comercial funciona hoje — aquisição, conversão, retenção e time. Não há respostas certas. Quanto mais honesto você for, mais direta e útil será nossa primeira sessão.","agent");
-    setTimeout(()=>addBubble(BLOCOS[0].q,"agent",BLOCOS[0].pill),400);
-  },900);
-})();
 </script>
 </body>
 </html>
