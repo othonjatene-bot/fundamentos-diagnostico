@@ -352,86 +352,93 @@ async function finalize(){
     return `${label}: ${v.aprofundado?v.inicial+" | "+v.aprofundado:v.inicial}`;
   }).join("\n");
 
-  const raw=await callProxy(
-    `Você é um especialista em estratégia comercial do Método Fundamentos. Com base nas respostas de um empresário sobre seus clientes, gere um perfil completo de cliente ideal.
-
-Responda APENAS com JSON válido, sem markdown:
+  // Duas chamadas paralelas para evitar truncamento
+  const [raw1, raw2] = await Promise.all([
+    callProxy(
+      `Você é um especialista em estratégia comercial do Método Fundamentos. Com base nas respostas de um empresário, gere o perfil de cliente ideal.
+Responda APENAS com JSON válido, sem markdown, sem texto adicional:
 {
   "icp": {
-    "narrativa": "string — 2-3 frases descrevendo o cliente ideal de forma humana e clara, sem jargão",
-    "demografico": ["string", "string", "string"],
-    "psicografico": ["string", "string", "string"],
-    "comportamental": ["string", "string", "string"],
-    "emocional": ["string", "string", "string"]
+    "narrativa": "2-3 frases descrevendo o cliente ideal de forma humana e clara",
+    "demografico": ["item1","item2","item3"],
+    "psicografico": ["item1","item2","item3"],
+    "comportamental": ["item1","item2","item3"],
+    "emocional": ["item1","item2","item3"]
   },
   "anti_icp": [
-    {"dimensao": "string", "caracteristica": "string", "sinal": "string"},
-    {"dimensao": "string", "caracteristica": "string", "sinal": "string"},
-    {"dimensao": "string", "caracteristica": "string", "sinal": "string"}
+    {"dimensao":"string","caracteristica":"string","sinal":"string"},
+    {"dimensao":"string","caracteristica":"string","sinal":"string"},
+    {"dimensao":"string","caracteristica":"string","sinal":"string"}
   ],
   "mensagens": [
-    {
-      "titulo": "string — nome da abordagem",
-      "dor": "string — dor específica em palavras do cliente",
-      "transformacao": "string — o que muda concretamente",
-      "prova": "string — por que acreditar",
-      "emocao": "string — como ele se sente",
-      "frase_completa": "string — 'Ajudamos [ICP] que enfrentam [dor] a conquistar [transformação], sentindo [emoção].'"
-    },
-    { "titulo": "string", "dor": "string", "transformacao": "string", "prova": "string", "emocao": "string", "frase_completa": "string" },
-    { "titulo": "string", "dor": "string", "transformacao": "string", "prova": "string", "emocao": "string", "frase_completa": "string" }
+    {"titulo":"string","dor":"string","transformacao":"string","prova":"string","emocao":"string","frase_completa":"Ajudamos [ICP] que enfrentam [dor] a conquistar [transformação], sentindo [emoção]."},
+    {"titulo":"string","dor":"string","transformacao":"string","prova":"string","emocao":"string","frase_completa":"string"},
+    {"titulo":"string","dor":"string","transformacao":"string","prova":"string","emocao":"string","frase_completa":"string"}
   ],
   "canais": [
-    {"nome": "string", "classificacao": "prioritario|ajustar|descontinuar", "justificativa": "string"},
-    {"nome": "string", "classificacao": "prioritario|ajustar|descontinuar", "justificativa": "string"},
-    {"nome": "string", "classificacao": "prioritario|ajustar|descontinuar", "justificativa": "string"},
-    {"nome": "string", "classificacao": "prioritario|ajustar|descontinuar", "justificativa": "string"}
+    {"nome":"string","classificacao":"prioritario","justificativa":"string"},
+    {"nome":"string","classificacao":"ajustar","justificativa":"string"},
+    {"nome":"string","classificacao":"descontinuar","justificativa":"string"},
+    {"nome":"string","classificacao":"prioritario","justificativa":"string"}
   ],
   "resumo_mentor": {
-    "perfil_sintetico": "string — 1 frase resumindo o ICP para o mentor",
-    "maior_oportunidade": "string — 1 frase sobre a maior oportunidade identificada",
-    "maior_risco": "string — 1 frase sobre o maior risco ou desalinhamento atual",
-    "pontos_para_sessao": ["string", "string", "string"]
-  },
-  "personas": [
-    {
-      "nome": "string — nome próprio + apelido simbólico. Ex: Ana, a Fundadora Visionária",
-      "papel": "string — Decisora / Influenciadora / Implementadora",
-      "motivacao": "string — o que mais a move profissional e pessoalmente",
-      "dor_central": "string — o problema que mais a incomoda e que a empresa resolve",
-      "emocao_dominante": "string — o estado emocional predominante antes de resolver o problema",
-      "gatilho_decisao": "string — o que a faz agir e buscar ajuda agora",
-      "tom_comunicacao": "string — como ela prefere ser abordada — direta, narrativa, técnica, emocional",
-      "frase_sintese": "string — uma frase que captura quem ela é em 1 linha",
-      "empatia": {
-        "pensa_sente": "string — preocupações internas, sonhos, o que realmente importa para ela",
-        "ouve": "string — o que ouve de colegas, mentores, redes sociais, mercado",
-        "ve": "string — o que observa no seu ambiente de trabalho e no mercado",
-        "fala_faz": "string — o que diz publicamente e como age no dia a dia",
-        "dores": "string — medos, frustrações e obstáculos que enfrenta",
-        "ganhos": "string — o que deseja conquistar, medir de sucesso, resultados que busca"
-      }
-    },
-    {
-      "nome": "string", "papel": "string", "motivacao": "string", "dor_central": "string",
-      "emocao_dominante": "string", "gatilho_decisao": "string", "tom_comunicacao": "string",
-      "frase_sintese": "string",
-      "empatia": {"pensa_sente": "string", "ouve": "string", "ve": "string", "fala_faz": "string", "dores": "string", "ganhos": "string"}
-    },
-    {
-      "nome": "string", "papel": "string", "motivacao": "string", "dor_central": "string",
-      "emocao_dominante": "string", "gatilho_decisao": "string", "tom_comunicacao": "string",
-      "frase_sintese": "string",
-      "empatia": {"pensa_sente": "string", "ouve": "string", "ve": "string", "fala_faz": "string", "dores": "string", "ganhos": "string"}
-    }
-  ]
+    "perfil_sintetico":"string",
+    "maior_oportunidade":"string",
+    "maior_risco":"string",
+    "pontos_para_sessao":["string","string","string"]
+  }
 }`,
-    `Respostas do empresário:\n${resps}`,3500
-  );
+      `Respostas:\n${resps}`, 2000
+    ),
+    callProxy(
+      `Você é um especialista em personas do Método Fundamentos. Com base nas respostas de um empresário sobre seus clientes, crie 3 personas derivadas do cliente ideal. Regra: ICP é o contexto da empresa; personas são os papéis humanos (decisor, influenciador, implementador) dentro dele.
+Responda APENAS com JSON válido, sem markdown, sem texto adicional:
+{"personas":[
+  {
+    "nome":"Nome Próprio, o Apelido Simbólico",
+    "papel":"Decisor/Decisora",
+    "motivacao":"string",
+    "dor_central":"string",
+    "emocao_dominante":"string",
+    "gatilho_decisao":"string",
+    "tom_comunicacao":"string",
+    "frase_sintese":"string",
+    "empatia":{"pensa_sente":"string","ouve":"string","ve":"string","fala_faz":"string","dores":"string","ganhos":"string"}
+  },
+  {
+    "nome":"string","papel":"Influenciador/Influenciadora","motivacao":"string","dor_central":"string","emocao_dominante":"string","gatilho_decisao":"string","tom_comunicacao":"string","frase_sintese":"string",
+    "empatia":{"pensa_sente":"string","ouve":"string","ve":"string","fala_faz":"string","dores":"string","ganhos":"string"}
+  },
+  {
+    "nome":"string","papel":"Implementador/Implementadora","motivacao":"string","dor_central":"string","emocao_dominante":"string","gatilho_decisao":"string","tom_comunicacao":"string","frase_sintese":"string",
+    "empatia":{"pensa_sente":"string","ouve":"string","ve":"string","fala_faz":"string","dores":"string","ganhos":"string"}
+  }
+]}`,
+      `Respostas:\n${resps}`, 2000
+    )
+  ]);
+
   showTyping(false);
 
-  let resultado=null;
-  if(raw){try{resultado=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch(e){}}
+  let resultado=null, personas=[];
+
+  // Parse chamada 1 — ICP + Mensagens + Canais + Resumo
+  if(raw1){
+    try{resultado=JSON.parse(raw1.replace(/```json|```/g,"").trim());}
+    catch(e){console.warn("Parse erro chamada 1:",e,raw1);}
+  }
+
+  // Parse chamada 2 — Personas
+  if(raw2){
+    try{
+      const p2=JSON.parse(raw2.replace(/```json|```/g,"").trim());
+      personas=p2.personas||[];
+    }catch(e){console.warn("Parse erro chamada 2:",e,raw2);}
+  }
+
+  // Merge personas no resultado
+  if(resultado) resultado.personas=personas;
+
   window._resultado=resultado;
   window._resps=resps;
 
