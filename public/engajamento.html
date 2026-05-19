@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fundamentos — Agente de Engajamento</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --off-white:#EDE9E1;--dark:#1A1814;--mid:#6B6760;
+  --accent:#8B6F4E;--accent-light:#C4A882;--line:rgba(26,24,20,0.1);
+  --serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',sans-serif;
+  --note-bg:#FEF8EC;--note-border:#f0d078;--note-color:#7a5c00;
+  --success-bg:#EDF7F0;--success-color:#1a6b3a;
+  --nepq1:#534AB7;--nepq2:#0F6E56;--nepq3:#993C1D;--nepq4:#854F0B;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--off-white);color:var(--dark);min-height:100vh;display:flex;justify-content:center;padding:2rem 1.25rem 5rem;}
+.container{width:100%;max-width:720px;}
+
+.hdr{padding:2.5rem 0 1.5rem;border-bottom:1px solid var(--line);margin-bottom:2rem;}
+.badge{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);background:rgba(139,111,78,.1);padding:4px 12px;border-radius:20px;margin-bottom:.85rem;}
+.hdr-title{font-family:var(--serif);font-size:clamp(1.7rem,4vw,2.5rem);font-weight:300;line-height:1.15;margin-bottom:.75rem;}
+.hdr-title em{font-style:italic;color:var(--accent);}
+.hdr-sub{font-size:.9rem;font-weight:300;color:var(--mid);line-height:1.72;max-width:54ch;}
+
+/* MODO */
+.mode-section{margin-bottom:2rem;}
+.mode-label{font-size:.68rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.75rem;}
+.mode-label::after{content:'';flex:1;height:1px;background:var(--accent-light);opacity:.4;}
+.mode-cards{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.mode-card{border:1px solid var(--line);background:#fff;padding:1.25rem;cursor:pointer;transition:border-color .2s,background .2s;}
+.mode-card:hover{border-color:var(--accent);}
+.mode-card.selected{border-color:var(--accent);background:rgba(139,111,78,.04);}
+.mode-icon{font-size:1.5rem;margin-bottom:.75rem;}
+.mode-title{font-size:.92rem;font-weight:500;color:var(--dark);margin-bottom:.35rem;}
+.mode-desc{font-size:.8rem;font-weight:300;color:var(--mid);line-height:1.55;}
+
+/* FORM */
+.form-section{display:none;}
+.form-label{font-size:.68rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.75rem;}
+.form-label::after{content:'';flex:1;height:1px;background:var(--accent-light);opacity:.4;}
+.fg{display:flex;flex-direction:column;gap:12px;margin-bottom:1.25rem;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);}
+.fi{font-family:var(--sans);font-size:.9rem;font-weight:300;color:var(--dark);background:#fff;border:1px solid var(--line);padding:.65rem .85rem;outline:none;transition:border-color .2s;width:100%;}
+.fi:focus{border-color:var(--accent);}
+textarea.fi{min-height:80px;resize:vertical;}
+select.fi{cursor:pointer;}
+.fn{font-size:.75rem;color:var(--mid);opacity:.75;margin-top:2px;line-height:1.5;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+
+/* ICP TOGGLE */
+.icp-toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px;cursor:pointer;}
+.icp-toggle input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;}
+.icp-toggle span{font-size:.85rem;color:var(--mid);}
+.icp-block{display:none;border:1px solid var(--note-border);background:var(--note-bg);padding:.85rem 1rem;margin-bottom:12px;}
+.icp-block-lbl{font-size:.68rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--note-color);margin-bottom:.5rem;}
+
+/* BOTÕES */
+.btn{font-family:var(--sans);font-size:.77rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:.65rem 1.6rem;border:1px solid var(--dark);background:var(--dark);color:var(--off-white);cursor:pointer;transition:background .2s;}
+.btn:hover{background:var(--accent);border-color:var(--accent);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-g{background:transparent;color:var(--dark);}
+.btn-g:hover{background:var(--dark);color:var(--off-white);}
+.brow{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-top:1rem;}
+
+/* LOADING */
+.loading{display:flex;align-items:center;gap:10px;font-size:.88rem;color:var(--mid);padding:1.25rem 0;}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--accent-light);display:inline-block;animation:bc 1.1s infinite;margin-right:3px;}
+.dots span:nth-child(2){animation-delay:.18s;}
+.dots span:nth-child(3){animation-delay:.36s;}
+@keyframes bc{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-6px);opacity:1}}
+
+/* RESULTADOS */
+.result-section{margin-top:2rem;padding-top:2rem;border-top:1px solid var(--line);display:none;}
+.result-label{font-size:.68rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1.5rem;display:flex;align-items:center;gap:.75rem;}
+.result-label::after{content:'';flex:1;height:1px;background:var(--accent-light);opacity:.4;}
+
+/* CARD DE MENSAGEM */
+.msg-card{border:1px solid var(--line);background:#fff;margin-bottom:1rem;}
+.msg-hdr{padding:.75rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:.85rem;}
+.msg-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;font-size:12px;font-weight:500;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.msg-hdr-info{flex:1;}
+.msg-titulo{font-size:.92rem;font-weight:500;color:var(--dark);margin-bottom:2px;}
+.msg-canal{font-size:.75rem;color:var(--mid);}
+.msg-body{padding:.85rem 1rem;}
+
+/* GATILHOS BADGE */
+.gatilhos-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:.85rem;}
+.gatilho-badge{display:inline-flex;align-items:center;gap:5px;font-size:.7rem;font-weight:500;padding:3px 9px;border-radius:12px;border:1px solid;}
+.gatilho-badge.ethos{background:rgba(83,74,183,.08);border-color:rgba(83,74,183,.3);color:#534AB7;}
+.gatilho-badge.pathos{background:rgba(153,60,29,.08);border-color:rgba(153,60,29,.3);color:#993C1D;}
+.gatilho-badge.logos{background:rgba(15,110,86,.08);border-color:rgba(15,110,86,.3);color:#0F6E56;}
+
+/* TEXTO DA MENSAGEM */
+.msg-texto{font-family:var(--serif);font-size:1.05rem;font-weight:300;line-height:1.72;color:var(--dark);padding:.85rem 1rem;border-left:3px solid var(--accent-light);margin:.5rem 0;background:rgba(139,111,78,.02);}
+
+/* EXPLICAÇÃO DOS GATILHOS */
+.gatilhos-exp{margin-top:.75rem;}
+.gatilho-exp-item{margin-bottom:.65rem;padding:.6rem .85rem;border-radius:2px;border-left:3px solid;}
+.gatilho-exp-item.ethos{border-color:#534AB7;background:rgba(83,74,183,.04);}
+.gatilho-exp-item.pathos{border-color:#993C1D;background:rgba(153,60,29,.04);}
+.gatilho-exp-item.logos{border-color:#0F6E56;background:rgba(15,110,86,.04);}
+.gatilho-exp-nome{font-size:.72rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px;}
+.gatilho-exp-nome.ethos{color:#534AB7;}
+.gatilho-exp-nome.pathos{color:#993C1D;}
+.gatilho-exp-nome.logos{color:#0F6E56;}
+.gatilho-exp-txt{font-size:.82rem;font-weight:300;color:var(--mid);line-height:1.55;}
+
+/* NEPQ TAG */
+.nepq-tag{display:inline-block;font-size:.68rem;font-weight:500;padding:2px 8px;border-radius:10px;margin-bottom:.5rem;}
+.nepq-situacao{background:rgba(83,74,183,.1);color:#534AB7;}
+.nepq-problema{background:rgba(15,110,86,.1);color:#0F6E56;}
+.nepq-implicacao{background:rgba(153,60,29,.1);color:#993C1D;}
+.nepq-solucao{background:rgba(133,79,11,.1);color:#854F0B;}
+
+/* BOTÃO COPIAR POR MENSAGEM */
+.btn-copy-msg{font-family:var(--sans);font-size:.7rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;padding:.4rem .9rem;border:1px solid var(--line);background:transparent;color:var(--mid);cursor:pointer;transition:all .2s;margin-top:.75rem;}
+.btn-copy-msg:hover{border-color:var(--accent);color:var(--accent);}
+.btn-copy-msg.copied{border-color:var(--success-color);color:var(--success-color);}
+
+/* SEQUÊNCIA */
+.seq-timeline{margin-top:.5rem;}
+.seq-item{display:flex;gap:12px;margin-bottom:10px;}
+.seq-dot{display:flex;flex-direction:column;align-items:center;flex-shrink:0;}
+.seq-dot-circle{width:28px;height:28px;border-radius:50%;background:var(--accent);color:white;font-size:11px;font-weight:500;display:flex;align-items:center;justify-content:center;}
+.seq-dot-line{width:2px;flex:1;background:var(--line);margin-top:4px;}
+.seq-content{flex:1;padding-bottom:12px;}
+.seq-meta{font-size:.72rem;color:var(--accent-light);margin-bottom:4px;font-weight:500;}
+.seq-msg-titulo{font-size:.88rem;font-weight:500;color:var(--dark);margin-bottom:.35rem;}
+
+/* AÇÃO */
+.action-row{display:flex;gap:.75rem;margin-top:1.25rem;flex-wrap:wrap;}
+.smsg{font-size:.82rem;color:var(--success-color);background:var(--success-bg);border:1px solid #b8e0c5;padding:.65rem .9rem;margin-top:.75rem;display:none;}
+
+.footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;}
+.flogo{font-family:var(--serif);font-size:1rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);}
+.fcopy{font-size:.72rem;color:var(--mid);font-weight:300;}
+
+@media(max-width:580px){.mode-cards{grid-template-columns:1fr;}.fr{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hdr">
+    <div class="badge">Módulo 3 — Comercial — Engajamento</div>
+    <h1 class="hdr-title">Agente de <em>Engajamento.</em></h1>
+    <p class="hdr-sub">Gere mensagens de primeiro contato ou sequências completas de nutrição — com gatilhos emocionais calibrados para o momento certo do lead.</p>
+  </div>
+
+  <!-- ESCOLHA DO MODO -->
+  <div class="mode-section" id="mode-section">
+    <div class="mode-label">O que você precisa agora?</div>
+    <div class="mode-cards">
+      <div class="mode-card" id="card-agora" onclick="selecionarModo('agora')">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-title">Preciso de uma mensagem agora</div>
+        <div class="mode-desc">Você está com um lead na frente e quer a mensagem certa para o próximo passo. Responde 4 perguntas rápidas e recebe 3 opções prontas.</div>
+      </div>
+      <div class="mode-card" id="card-seq" onclick="selecionarModo('sequencia')">
+        <div class="mode-icon">📋</div>
+        <div class="mode-title">Preciso de uma sequência completa</div>
+        <div class="mode-desc">Você quer estruturar o funil de nutrição de um segmento. Recebe 5 a 7 mensagens em ordem, com intervalo e gatilho para cada uma.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO MENSAGEM AGORA -->
+  <div class="form-section" id="form-agora">
+    <div class="form-label">Contexto do lead</div>
+    <div class="fg">
+      <div class="field">
+        <div class="fl">Quem é esse lead?</div>
+        <textarea class="fi" id="a-lead" placeholder="Ex: Dono de uma clínica de estética com 3 funcionários, chegou pelo Instagram após ver um post sobre gestão comercial. Está tentando organizar o processo de vendas mas cada atendente faz de um jeito."></textarea>
+        <div class="fn">Cargo, setor, contexto, dores percebidas. Quanto mais específico, mais precisa a mensagem.</div>
+      </div>
+      <div class="fr">
+        <div class="field">
+          <div class="fl">Como ele chegou até você?</div>
+          <select class="fi" id="a-origem">
+            <option value="">Selecione...</option>
+            <option value="Instagram">Instagram</option>
+            <option value="LinkedIn">LinkedIn</option>
+            <option value="Indicação">Indicação</option>
+            <option value="Google / busca">Google / busca</option>
+            <option value="Evento / networking">Evento / networking</option>
+            <option value="WhatsApp direto">WhatsApp direto</option>
+            <option value="E-mail marketing">E-mail marketing</option>
+            <option value="Outro canal">Outro canal</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="fl">Canal desta mensagem</div>
+          <select class="fi" id="a-canal">
+            <option value="">Selecione...</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="DM Instagram">DM Instagram</option>
+            <option value="DM LinkedIn">DM LinkedIn</option>
+            <option value="E-mail">E-mail</option>
+            <option value="Call / abertura">Call / abertura</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="fl">O que aconteceu no último contato?</div>
+        <textarea class="fi" id="a-ultimo" placeholder="Ex: Curtiu o post e comentou 'faz falta isso aqui'. Ainda não houve nenhuma conversa direta." style="min-height:65px;"></textarea>
+      </div>
+      <div class="field">
+        <div class="fl">Objetivo desta mensagem</div>
+        <select class="fi" id="a-objetivo">
+          <option value="">Selecione...</option>
+          <option value="Iniciar a conversa — primeiro contato">Iniciar a conversa — primeiro contato</option>
+          <option value="Reengajar lead que esfriou">Reengajar lead que esfriou</option>
+          <option value="Nutrir — entregar valor sem pedir nada">Nutrir — entregar valor sem pedir nada</option>
+          <option value="Avançar para o diagnóstico">Avançar para o diagnóstico</option>
+          <option value="Follow-up após envio de proposta">Follow-up após envio de proposta</option>
+          <option value="Alinhamento de expectativas antes do diagnóstico">Alinhamento de expectativas antes do diagnóstico</option>
+        </select>
+      </div>
+
+      <!-- ICP OPCIONAL -->
+      <label class="icp-toggle">
+        <input type="checkbox" id="icp-check" onchange="toggleICP()">
+        <span>Tenho o ICP definido para este lead (do agente de Atração) — quero usar para personalizar as mensagens</span>
+      </label>
+      <div class="icp-block" id="icp-block">
+        <div class="icp-block-lbl">Cole aqui o resultado do ICP deste lead (texto livre)</div>
+        <textarea class="fi" id="icp-txt" placeholder="Cole o conteúdo copiado do agente de Atração — ICP, dor principal, emoção dominante, o que preferir." style="min-height:100px;background:transparent;border:none;padding:0;margin-top:4px;"></textarea>
+      </div>
+    </div>
+
+    <div id="ld-agora" class="loading" style="display:none"><div class="dots"><span></span><span></span><span></span></div><span id="msg-ld-agora">Analisando o contexto...</span></div>
+    <div class="brow">
+      <button class="btn" id="btn-agora" onclick="gerarMensagens()">Gerar mensagens →</button>
+      <button class="btn btn-g" onclick="voltarModo()">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- FORMULÁRIO SEQUÊNCIA -->
+  <div class="form-section" id="form-seq">
+    <div class="form-label">Contexto da sequência</div>
+    <div class="fg">
+      <div class="field">
+        <div class="fl">Descreva o segmento / ICP desta sequência</div>
+        <textarea class="fi" id="s-icp" placeholder="Ex: Fundadores de empresas de serviços B2B com 5-20 funcionários, que já tentaram estruturar o comercial mas abandonaram por falta de tempo ou método. Perfil analítico, resistente a 'gurusinhos', valoriza resultado concreto."></textarea>
+        <div class="fn">Cole o resultado do agente de Atração ou descreva livremente. Quanto mais específico, mais precisa a sequência.</div>
+      </div>
+      <div class="fr">
+        <div class="field">
+          <div class="fl">Canal principal</div>
+          <select class="fi" id="s-canal">
+            <option value="">Selecione...</option>
+            <option value="WhatsApp">WhatsApp</option>
+            <option value="E-mail">E-mail</option>
+            <option value="LinkedIn">LinkedIn</option>
+            <option value="Instagram DM">Instagram DM</option>
+            <option value="Misto (WhatsApp + E-mail)">Misto (WhatsApp + E-mail)</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="fl">Temperatura do lead</div>
+          <select class="fi" id="s-temp">
+            <option value="">Selecione...</option>
+            <option value="Frio — nunca interagiu com a marca">Frio — nunca interagiu</option>
+            <option value="Morno — já interagiu mas não conversou">Morno — interagiu mas não conversou</option>
+            <option value="Quente — já conversou mas não avançou">Quente — conversou mas não avançou</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="field">
+          <div class="fl">Produto ou serviço a apresentar</div>
+          <input class="fi" id="s-produto" type="text" placeholder="Ex: Mentoria comercial, Diagnóstico de funil, Treinamento de SDR...">
+        </div>
+        <div class="field">
+          <div class="fl">Duração da sequência</div>
+          <select class="fi" id="s-duracao">
+            <option value="2 semanas (5 mensagens)">2 semanas — 5 mensagens</option>
+            <option value="3 semanas (7 mensagens)">3 semanas — 7 mensagens</option>
+            <option value="4 semanas (8 mensagens)">4 semanas — 8 mensagens</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div id="ld-seq" class="loading" style="display:none"><div class="dots"><span></span><span></span><span></span></div><span id="msg-ld-seq">Construindo a sequência...</span></div>
+    <div class="brow">
+      <button class="btn" id="btn-seq" onclick="gerarSequencia()">Gerar sequência →</button>
+      <button class="btn btn-g" onclick="voltarModo()">← Voltar</button>
+    </div>
+  </div>
+
+  <!-- RESULTADOS -->
+  <div id="result-sec" class="result-section">
+    <div class="result-label" id="result-label">Mensagens geradas</div>
+    <div id="result-content"></div>
+    <div class="action-row">
+      <button class="btn" onclick="copiarTudo()">Copiar tudo</button>
+      <button class="btn btn-g" onclick="voltarModo()">Gerar novas mensagens</button>
+    </div>
+    <div class="smsg" id="smsg">✓ Copiado com sucesso.</div>
+  </div>
+
+  <div class="footer">
+    <span class="flogo">Fundamentos</span>
+    <span class="fcopy">Método Comercial</span>
+  </div>
+</div>
+
+<script>
+var modoAtual = null;
+var resultadoAtual = null;
+
+var msgLoading = {
+  agora: ['Analisando o contexto do lead...', 'Selecionando gatilhos para este momento...', 'Calibrando o tom NEPQ...', 'Redigindo as mensagens...'],
+  seq: ['Mapeando o perfil do lead...', 'Estruturando a jornada emocional...', 'Selecionando gatilhos por estágio...', 'Construindo a sequência...', 'Ajustando intervalos e CTAs...']
+};
+
+function selecionarModo(modo) {
+  modoAtual = modo;
+  document.getElementById('mode-section').style.display = 'none';
+  document.getElementById('form-agora').style.display = modo === 'agora' ? 'block' : 'none';
+  document.getElementById('form-seq').style.display = modo === 'sequencia' ? 'block' : 'none';
+  document.getElementById('result-sec').style.display = 'none';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function voltarModo() {
+  document.getElementById('mode-section').style.display = 'block';
+  document.getElementById('form-agora').style.display = 'none';
+  document.getElementById('form-seq').style.display = 'none';
+  document.getElementById('result-sec').style.display = 'none';
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function toggleICP() {
+  var checked = document.getElementById('icp-check').checked;
+  document.getElementById('icp-block').style.display = checked ? 'block' : 'none';
+}
+
+function gV(id) {var e = document.getElementById(id); return e ? e.value.trim() : '';}
+function delay(ms) {return new Promise(function(r) {setTimeout(r, ms);});}
+
+async function callProxy(system, userMsg, maxTokens) {
+  try {
+    var r = await fetch('/api/claude', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({system: system, userMsg: userMsg, maxTokens: maxTokens || 2000})});
+    if (!r.ok) return null;
+    var d = await r.json();
+    return d.text || null;
+  } catch(e) {return null;}
+}
+
+function esc(s) {return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function classGatilho(tipo) {
+  if (tipo === 'ethos') return 'ethos';
+  if (tipo === 'logos') return 'logos';
+  return 'pathos';
+}
+
+function nepqClass(nepq) {
+  var n = (nepq || '').toLowerCase();
+  if (n.includes('situa')) return 'nepq-situacao';
+  if (n.includes('problema')) return 'nepq-problema';
+  if (n.includes('implica')) return 'nepq-implicacao';
+  return 'nepq-solucao';
+}
+
+// ── GERAR MENSAGENS AGORA ─────────────────────────────────────────────────
+
+async function gerarMensagens() {
+  var lead = gV('a-lead'), origem = gV('a-origem'), canal = gV('a-canal'),
+      ultimo = gV('a-ultimo'), objetivo = gV('a-objetivo');
+  if (!lead || !canal || !objetivo) {alert('Preencha pelo menos: quem é o lead, o canal e o objetivo.'); return;}
+
+  var icp = document.getElementById('icp-check').checked ? gV('icp-txt') : '';
+  document.getElementById('btn-agora').disabled = true;
+  var ldEl = document.getElementById('ld-agora');
+  ldEl.style.display = 'flex';
+  var msgs = msgLoading.agora, mi = 0;
+  var iv = setInterval(function() {mi = (mi+1) % msgs.length; document.getElementById('msg-ld-agora').textContent = msgs[mi];}, 1800);
+
+  var system = `Você é um especialista em engajamento comercial do Método Fundamentos. Gera mensagens de vendas consultivas usando NEPQ (Neuro Emotional Persuasion Questioning) e gatilhos emocionais fundamentados em Ethos (credibilidade), Pathos (emoção) e Logos (razão).
+
+PRINCÍPIOS FUNDAMENTAIS:
+- Conexão antes de persuasão. O lead ainda está decidindo se vale a pena te ouvir.
+- Nunca iniciar falando da empresa ou da solução — sempre pelo contexto do lead.
+- Justificativa obrigatória: sempre dar o motivo do próximo passo (aumenta aceitação em 94%).
+- Autonomia: dar permissão para dizer não aumenta confiança e reduz resistência.
+- Especificidade: mensagens específicas geram mais confiança que genéricas.
+
+GATILHOS DISPONÍVEIS (do Livro de Ouro dos Gatilhos Mentais - Gustavo Ferreira):
+ETHOS (credibilidade): Especificidade, Autoridade, Prova Social, Exclusividade
+PATHOS (emoção): Curiosidade, Antecipação, Empatia, Identificação, Personalização, Imaginação, Quebra de padrão, Dor x Prazer, Grande Porque, Inimigo Comum
+LOGOS (razão): Justificativa, Compromisso e Coerência, Reciprocidade, Contraste, Garantia, Simplicidade
+
+ESTÁGIOS NEPQ:
+- Situação: criar segurança, contexto leve — lead relaxado
+- Problema: consciência da dor — lead curioso e reflexivo  
+- Implicação: urgência emocional — NÃO usar no primeiro contato
+- Solução/Visão: despertar desejo — apenas quando há abertura
+
+Responda APENAS com JSON válido, sem markdown:
+{
+  "mensagens": [
+    {
+      "titulo": "string — nome desta abordagem",
+      "canal": "string — canal recomendado",
+      "nepq_estagio": "string — Situação / Problema / Solução",
+      "gatilhos": [{"nome": "string", "tipo": "ethos|pathos|logos", "explicacao": "string — por que este gatilho aqui e como aparece na mensagem"}],
+      "texto": "string — a mensagem completa, no tom e formato do canal",
+      "nota_facilitador": "string — o que observar na resposta do lead e como reagir"
+    }
+  ]
+}
+Gere exatamente 3 mensagens com abordagens diferentes — tons diferentes, ênfases diferentes, mas todas coerentes com o NEPQ e o estágio correto para o objetivo informado.`;
+
+  var userMsg = `Lead: ${lead}\nComo chegou: ${origem || 'não informado'}\nCanal da mensagem: ${canal}\nÚltimo contato: ${ultimo || 'nenhum'}\nObjetivo: ${objetivo}${icp ? '\n\nICP / contexto adicional:\n' + icp : ''}`;
+
+  var raw = await callProxy(system, userMsg, 2500);
+  clearInterval(iv);
+  ldEl.style.display = 'none';
+  document.getElementById('btn-agora').disabled = false;
+
+  var resultado = null;
+  if (raw) {try {resultado = JSON.parse(raw.replace(/```json|```/g,'').trim());} catch(e) {}}
+  if (!resultado || !resultado.mensagens) {alert('Erro ao gerar mensagens. Tente novamente.'); return;}
+
+  resultadoAtual = resultado;
+  renderMensagens(resultado.mensagens);
+}
+
+function renderMensagens(mensagens) {
+  var html = '';
+  mensagens.forEach(function(m, i) {
+    var nepqCls = nepqClass(m.nepq_estagio);
+    html += '<div class="msg-card">';
+    html += '<div class="msg-hdr"><div class="msg-num">' + (i+1) + '</div><div class="msg-hdr-info">';
+    html += '<div class="msg-titulo">' + esc(m.titulo) + '</div>';
+    html += '<div class="msg-canal">' + esc(m.canal) + ' &nbsp;·&nbsp; <span class="nepq-tag ' + nepqCls + '">NEPQ: ' + esc(m.nepq_estagio) + '</span></div>';
+    html += '</div></div>';
+    html += '<div class="msg-body">';
+
+    // Gatilhos badges
+    if (m.gatilhos && m.gatilhos.length) {
+      html += '<div class="gatilhos-row">';
+      m.gatilhos.forEach(function(g) {
+        html += '<span class="gatilho-badge ' + classGatilho(g.tipo) + '">' + esc(g.nome) + '</span>';
+      });
+      html += '</div>';
+    }
+
+    // Texto da mensagem
+    html += '<div class="msg-texto">' + esc(m.texto).replace(/\n/g, '<br>') + '</div>';
+
+    // Explicação dos gatilhos
+    if (m.gatilhos && m.gatilhos.length) {
+      html += '<div class="gatilhos-exp">';
+      m.gatilhos.forEach(function(g) {
+        var cls = classGatilho(g.tipo);
+        html += '<div class="gatilho-exp-item ' + cls + '">';
+        html += '<div class="gatilho-exp-nome ' + cls + '">' + esc(g.nome) + ' — ' + (g.tipo === 'ethos' ? 'Credibilidade' : g.tipo === 'logos' ? 'Razão' : 'Emoção') + '</div>';
+        html += '<div class="gatilho-exp-txt">' + esc(g.explicacao) + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // Nota para o facilitador
+    if (m.nota_facilitador) {
+      html += '<div style="margin-top:.75rem;padding:.6rem .85rem;background:var(--note-bg);border:1px solid var(--note-border);font-size:.82rem;color:var(--note-color);line-height:1.55;">';
+      html += '<strong style="display:block;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;">Nota — o que observar na resposta</strong>';
+      html += esc(m.nota_facilitador);
+      html += '</div>';
+    }
+
+    html += '<button class="btn-copy-msg" onclick="copiarMsg(' + i + ', this)">Copiar mensagem</button>';
+    html += '</div></div>';
+  });
+
+  document.getElementById('result-label').textContent = '3 mensagens geradas';
+  document.getElementById('result-content').innerHTML = html;
+  document.getElementById('result-sec').style.display = 'block';
+  document.getElementById('result-sec').scrollIntoView({behavior: 'smooth'});
+}
+
+// ── GERAR SEQUÊNCIA ──────────────────────────────────────────────────────
+
+async function gerarSequencia() {
+  var icp = gV('s-icp'), canal = gV('s-canal'), temp = gV('s-temp'),
+      produto = gV('s-produto'), duracao = gV('s-duracao');
+  if (!icp || !canal || !temp || !produto) {alert('Preencha todos os campos para gerar a sequência.'); return;}
+
+  document.getElementById('btn-seq').disabled = true;
+  var ldEl = document.getElementById('ld-seq');
+  ldEl.style.display = 'flex';
+  var msgs = msgLoading.seq, mi = 0;
+  var iv = setInterval(function() {mi = (mi+1) % msgs.length; document.getElementById('msg-ld-seq').textContent = msgs[mi];}, 1800);
+
+  var system = `Você é especialista em sequências de nutrição comercial do Método Fundamentos. Cria sequências de engajamento usando NEPQ e gatilhos emocionais.
+
+ESTRUTURA DA SEQUÊNCIA (Mapa de Nutrição Fundamentos):
+- Topo — Awareness: lead se identifica com a dor. Tom: curiosidade e empatia.
+- Meio — Consideração: construir autoridade e confiança. Tom: segurança e prova.
+- Fundo — Conversão: criar abertura para conversa. Tom: confiança e autonomia.
+
+NEPQ por estágio:
+- Awareness → Situação (criar segurança) + Problema (despertar consciência)
+- Consideração → Problema aprofundado + primeiros sinais de Implicação
+- Conversão → Solução/Visão + Permissão explícita
+
+PRINCÍPIOS:
+- Reciprocidade primeiro: dar valor sem pedir nada nos primeiros contatos.
+- Justificativa sempre: todo CTA precisa do "porque" (aumenta aceitação em 94%).
+- Autonomia no final: "faz sentido pra você?" em vez de pressão.
+- Sequência 3E em mensagens de nutrição: Empatia + Educação + Evidência.
+
+Responda APENAS com JSON válido, sem markdown:
+{
+  "resumo_estrategico": "string — lógica geral da sequência e o arco emocional planejado",
+  "mensagens": [
+    {
+      "numero": 1,
+      "dia": "string — quando enviar. Ex: Dia 1",
+      "estagio": "string — Awareness / Consideração / Conversão",
+      "titulo": "string — nome desta mensagem na sequência",
+      "canal": "string",
+      "nepq_estagio": "string",
+      "gatilhos": [{"nome": "string", "tipo": "ethos|pathos|logos", "explicacao": "string"}],
+      "texto": "string — mensagem completa",
+      "cta": "string — a ação desejada após esta mensagem"
+    }
+  ]
+}`;
+
+  var userMsg = `ICP / Segmento: ${icp}\nCanal principal: ${canal}\nTemperatura do lead: ${temp}\nProduto/serviço: ${produto}\nDuração: ${duracao}`;
+
+  var raw = await callProxy(system, userMsg, 3000);
+  clearInterval(iv);
+  ldEl.style.display = 'none';
+  document.getElementById('btn-seq').disabled = false;
+
+  var resultado = null;
+  if (raw) {try {resultado = JSON.parse(raw.replace(/```json|```/g,'').trim());} catch(e) {}}
+  if (!resultado || !resultado.mensagens) {alert('Erro ao gerar sequência. Tente novamente.'); return;}
+
+  resultadoAtual = resultado;
+  renderSequencia(resultado);
+}
+
+function renderSequencia(resultado) {
+  var html = '';
+
+  if (resultado.resumo_estrategico) {
+    html += '<div style="border:1px solid var(--line);background:#fff;padding:.85rem 1rem;margin-bottom:1.25rem;">';
+    html += '<div style="font-size:.65rem;font-weight:500;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-light);margin-bottom:.4rem;">Estratégia da sequência</div>';
+    html += '<div style="font-size:.88rem;font-weight:300;color:var(--mid);line-height:1.65;">' + esc(resultado.resumo_estrategico) + '</div>';
+    html += '</div>';
+  }
+
+  html += '<div class="seq-timeline">';
+  resultado.mensagens.forEach(function(m, i) {
+    var isLast = i === resultado.mensagens.length - 1;
+    var nepqCls = nepqClass(m.nepq_estagio);
+    var estagioColor = m.estagio === 'Awareness' ? '#534AB7' : m.estagio === 'Consideração' ? '#0F6E56' : '#993C1D';
+
+    html += '<div class="seq-item">';
+    html += '<div class="seq-dot"><div class="seq-dot-circle">' + m.numero + '</div>';
+    if (!isLast) html += '<div class="seq-dot-line"></div>';
+    html += '</div>';
+    html += '<div class="seq-content">';
+    html += '<div class="seq-meta">' + esc(m.dia) + ' &nbsp;·&nbsp; ' + esc(m.canal) + ' &nbsp;·&nbsp; ';
+    html += '<span style="color:' + estagioColor + ';font-weight:500;">' + esc(m.estagio) + '</span></div>';
+    html += '<div class="seq-msg-titulo">' + esc(m.titulo) + '</div>';
+
+    // Gatilhos
+    if (m.gatilhos && m.gatilhos.length) {
+      html += '<div class="gatilhos-row">';
+      m.gatilhos.forEach(function(g) {html += '<span class="gatilho-badge ' + classGatilho(g.tipo) + '">' + esc(g.nome) + '</span>';});
+      html += '</div>';
+    }
+
+    // Texto
+    html += '<div class="msg-texto" style="font-size:.95rem;">' + esc(m.texto).replace(/\n/g, '<br>') + '</div>';
+
+    // Explicação gatilhos
+    if (m.gatilhos && m.gatilhos.length) {
+      html += '<div class="gatilhos-exp">';
+      m.gatilhos.forEach(function(g) {
+        var cls = classGatilho(g.tipo);
+        html += '<div class="gatilho-exp-item ' + cls + '">';
+        html += '<div class="gatilho-exp-nome ' + cls + '">' + esc(g.nome) + '</div>';
+        html += '<div class="gatilho-exp-txt">' + esc(g.explicacao) + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    // CTA
+    if (m.cta) {
+      html += '<div style="margin-top:.65rem;font-size:.8rem;color:var(--accent);"><strong>Ação esperada:</strong> ' + esc(m.cta) + '</div>';
+    }
+
+    html += '<button class="btn-copy-msg" onclick="copiarSeqMsg(' + i + ', this)">Copiar mensagem</button>';
+    html += '</div></div>';
+  });
+  html += '</div>';
+
+  var total = resultado.mensagens.length;
+  document.getElementById('result-label').textContent = total + ' mensagens na sequência';
+  document.getElementById('result-content').innerHTML = html;
+  document.getElementById('result-sec').style.display = 'block';
+  document.getElementById('result-sec').scrollIntoView({behavior: 'smooth'});
+}
+
+// ── COPIAR ────────────────────────────────────────────────────────────────
+
+function copiarMsg(idx, btn) {
+  if (!resultadoAtual || !resultadoAtual.mensagens) return;
+  var m = resultadoAtual.mensagens[idx];
+  var txt = m.texto;
+  navigator.clipboard.writeText(txt).then(function() {
+    btn.textContent = '✓ Copiado!';
+    btn.classList.add('copied');
+    setTimeout(function() {btn.textContent = 'Copiar mensagem'; btn.classList.remove('copied');}, 2500);
+  });
+}
+
+function copiarSeqMsg(idx, btn) {copiarMsg(idx, btn);}
+
+function copiarTudo() {
+  if (!resultadoAtual) return;
+  var txt = '';
+  if (resultadoAtual.resumo_estrategico) {
+    txt += 'ESTRATÉGIA\n' + resultadoAtual.resumo_estrategico + '\n\n' + '='.repeat(40) + '\n\n';
+  }
+  resultadoAtual.mensagens.forEach(function(m, i) {
+    txt += (m.dia ? m.dia + ' — ' : (i+1) + '. ') + m.titulo + '\n';
+    if (m.canal) txt += 'Canal: ' + m.canal + '\n';
+    if (m.nepq_estagio) txt += 'NEPQ: ' + m.nepq_estagio + '\n';
+    if (m.gatilhos) txt += 'Gatilhos: ' + m.gatilhos.map(function(g){return g.nome;}).join(', ') + '\n';
+    txt += '\n' + m.texto + '\n';
+    if (m.gatilhos) {
+      txt += '\nExplicação dos gatilhos:\n';
+      m.gatilhos.forEach(function(g) {txt += '• ' + g.nome + ': ' + g.explicacao + '\n';});
+    }
+    if (m.nota_facilitador) txt += '\nNota: ' + m.nota_facilitador + '\n';
+    if (m.cta) txt += 'Ação esperada: ' + m.cta + '\n';
+    txt += '\n' + '-'.repeat(40) + '\n\n';
+  });
+  navigator.clipboard.writeText(txt).then(function() {
+    var s = document.getElementById('smsg'); s.style.display = 'block';
+    setTimeout(function() {s.style.display = 'none';}, 4000);
+  }).catch(function() {alert('Selecione o texto e copie manualmente.');});
+}
+</script>
+</body>
+</html>
