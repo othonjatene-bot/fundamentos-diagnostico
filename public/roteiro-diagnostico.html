@@ -309,64 +309,7 @@ async function gerarRoteiro(){
   var mi=0;
   var iv=setInterval(function(){mi=(mi+1)%msgs.length;document.getElementById("ld-msg").textContent=msgs[mi];},1800);
 
-  var system=`Você é um expert em diagnóstico consultivo do Método Fundamentos (SPIN + NEPQ + SPICED). Gere um roteiro de call de diagnóstico completo e personalizado para o vendedor usar em tempo real.
-
-O roteiro deve ser prático e operacional — perguntas prontas para usar, não teoria.
-
-FRAMEWORKS INTEGRADOS:
-- SPIN: Situação (contexto) → Problema (fricção) → Implicação (custo/risco) → Need-Payoff (resultado desejado)
-- NEPQ: perguntas de consciência e consequência emocional — aprofundam sem pressionar
-- SPICED: valida Situação, Dor, Impacto, Critical Event, Decision — protege o pipeline
-
-REGRAS DE OURO:
-- Menos Situação: máximo 4 perguntas — se o vendedor já sabe algo, não pergunte de novo
-- Need-Payoff só depois de P+I sólidos — não antes
-- NEPQ na Implicação: "o que acontece se nada mudar?" ativa urgência real
-- SPICED no fechamento: confirmar prioridade, autoridade e próximo passo
-
-Responda APENAS com JSON válido, sem markdown:
-{
-  "alerta_preparacao": "string — 1 insight crítico sobre este perfil específico que o vendedor precisa saber antes de entrar na call",
-  "hipoteses_problema": [
-    {"numero": 1, "hipotese": "string — problema mais provável para este setor/cargo", "por_que": "string — razão"},
-    {"numero": 2, "hipotese": "string", "por_que": "string"},
-    {"numero": 3, "hipotese": "string", "por_que": "string"}
-  ],
-  "abertura": {
-    "script": "string — frase de abertura personalizada para este lead, com frame e pedido de permissão"
-  },
-  "perguntas_situacao": [
-    {"texto": "string", "framework": "SPIN", "nota": "string — por que esta pergunta aqui"}
-  ],
-  "perguntas_problema": [
-    {"texto": "string", "framework": "SPIN", "nota": "string"},
-    {"texto": "string", "framework": "NEPQ", "nota": "string"}
-  ],
-  "perguntas_implicacao": [
-    {"texto": "string", "framework": "SPIN", "nota": "string"},
-    {"texto": "string", "framework": "NEPQ", "nota": "string"},
-    {"texto": "string", "framework": "SPIN", "nota": "string"}
-  ],
-  "perguntas_needpayoff": [
-    {"texto": "string", "framework": "SPIN", "nota": "string"},
-    {"texto": "string", "framework": "NEPQ", "nota": "string"}
-  ],
-  "checklist_spiced": [
-    "string — critério a confirmar antes de encerrar",
-    "string",
-    "string",
-    "string",
-    "string"
-  ],
-  "objecoes_provaveis": [
-    {"objecao": "string", "como_conduzir": "string"},
-    {"objecao": "string", "como_conduzir": "string"},
-    {"objecao": "string", "como_conduzir": "string"}
-  ],
-  "proximo_passo_recomendado": "string — o próximo passo ideal para este ticket/ciclo com linguagem pronta para usar"
-}`;
-
-  var userMsg=`Lead: ${nome} — ${cargo} em ${empresa}
+  var contexto=`Lead: ${nome} — ${cargo} em ${empresa}
 Setor: ${setor} | Porte: ${porte||"não informado"} | Temperatura: ${temp}
 Como chegou: ${origem||"não informado"}
 O que motivou o contato: ${motivo||"não informado"}
@@ -374,18 +317,43 @@ Produto/serviço: ${produto||"não informado"} | Ticket/ciclo: ${ticket}
 O que já sei sobre os problemas: ${sabe||"nada além do acima"}
 Nome do vendedor: ${vendedor}`;
 
-  var raw=await callProxy(system,userMsg,2500);
+  var sys1=`Você é um expert em diagnóstico consultivo do Método Fundamentos (SPIN + NEPQ + SPICED). Gere a PRIMEIRA PARTE do roteiro de call personalizado.
+
+REGRAS: Menos Situação (máx 4 perguntas). Need-Payoff só depois de P+I sólidos. NEPQ aprofunda emoção sem pressionar. Perguntas prontas para usar em tempo real.
+
+Responda APENAS com JSON válido, sem markdown:
+{"alerta_preparacao":"string — 1 insight crítico sobre este perfil que o vendedor precisa saber","hipoteses_problema":[{"numero":1,"hipotese":"string — problema mais provável","por_que":"string"},{"numero":2,"hipotese":"string","por_que":"string"},{"numero":3,"hipotese":"string","por_que":"string"}],"abertura":{"script":"string — frase de abertura personalizada com frame e pedido de permissão"},"perguntas_situacao":[{"texto":"string","framework":"SPIN","nota":"string"},{"texto":"string","framework":"SPIN","nota":"string"},{"texto":"string","framework":"SPIN","nota":"string"}],"perguntas_problema":[{"texto":"string","framework":"SPIN","nota":"string"},{"texto":"string","framework":"SPIN","nota":"string"},{"texto":"string","framework":"NEPQ","nota":"string"}]}`;
+
+  var sys2=`Você é um expert em diagnóstico consultivo do Método Fundamentos (SPIN + NEPQ + SPICED). Gere a SEGUNDA PARTE do roteiro de call personalizado.
+
+REGRAS: Implicação é o motor de urgência — use números e impacto emocional. Need-Payoff: o lead define o critério de sucesso. SPICED valida prioridade, autoridade e próximo passo.
+
+Responda APENAS com JSON válido, sem markdown:
+{"perguntas_implicacao":[{"texto":"string","framework":"SPIN","nota":"string"},{"texto":"string","framework":"NEPQ","nota":"string"},{"texto":"string","framework":"SPIN","nota":"string"}],"perguntas_needpayoff":[{"texto":"string","framework":"SPIN","nota":"string"},{"texto":"string","framework":"NEPQ","nota":"string"}],"checklist_spiced":["string — critério 1","string — critério 2","string — critério 3","string — critério 4","string — critério 5"],"objecoes_provaveis":[{"objecao":"string","como_conduzir":"string"},{"objecao":"string","como_conduzir":"string"},{"objecao":"string","como_conduzir":"string"}],"proximo_passo_recomendado":"string — próximo passo ideal com linguagem pronta para usar"}`;
+
+  var [raw1,raw2]=await Promise.all([
+    callProxy(sys1,contexto,1500),
+    callProxy(sys2,contexto,1500)
+  ]);
+
   clearInterval(iv);
   ldEl.style.display="none";
   document.getElementById("btn-gerar").disabled=false;
 
-  var dados=null;
-  if(raw){
-    try{dados=JSON.parse(raw.replace(/```json|```/g,"").trim());}
-    catch(e){var m=raw.match(/\{[\s\S]*\}/);if(m)try{dados=JSON.parse(m[0]);}catch(e2){}}
+  function parseJSON(raw){
+    if(!raw)return null;
+    try{return JSON.parse(raw.replace(/```json|```/g,"").trim());}catch(e){}
+    try{var m=raw.match(/\{[\s\S]*\}/);if(m)return JSON.parse(m[0]);}catch(e){}
+    return null;
   }
 
-  if(!dados){alert("Erro ao gerar o roteiro. Tente novamente.");return;}
+  var d1=parseJSON(raw1);
+  var d2=parseJSON(raw2);
+
+  if(!d1&&!d2){alert("Erro ao gerar o roteiro. Tente novamente.");return;}
+
+  // Mesclar as duas respostas
+  var dados=Object.assign({},d1||{},d2||{});
   dadosRoteiro=dados;
 
   renderRoteiro(dados,nome,empresa,cargo,setor,produto,vendedor,ticket);
