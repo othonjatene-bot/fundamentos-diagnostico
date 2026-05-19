@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fundamentos — Roteiro de Diagnóstico</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --off-white:#EDE9E1;--dark:#1A1814;--mid:#6B6760;
+  --accent:#8B6F4E;--accent-light:#C4A882;--line:rgba(26,24,20,0.1);
+  --serif:'Cormorant Garamond',Georgia,serif;--sans:'DM Sans',sans-serif;
+  --spin:#534AB7;--nepq:#0F6E56;--spiced:#854F0B;--cor:#993C1D;
+  --note-bg:#FEF8EC;--note-border:#f0d078;--note-color:#7a5c00;
+  --success-bg:#EDF7F0;--success-color:#1a6b3a;
+}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--off-white);color:var(--dark);min-height:100vh;display:flex;justify-content:center;padding:2rem 1.25rem 5rem;}
+.container{width:100%;max-width:720px;}
+
+.hdr{padding:2.5rem 0 1.5rem;border-bottom:1px solid var(--line);margin-bottom:2rem;}
+.badge{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--cor);background:rgba(153,60,29,.1);padding:4px 12px;border-radius:20px;margin-bottom:.85rem;}
+.hdr-title{font-family:var(--serif);font-size:clamp(1.7rem,4vw,2.5rem);font-weight:300;line-height:1.15;margin-bottom:.75rem;}
+.hdr-title em{font-style:italic;color:var(--accent);}
+.hdr-sub{font-size:.9rem;font-weight:300;color:var(--mid);line-height:1.72;max-width:54ch;}
+
+/* FORM */
+.form-sec{display:block;}
+.sec-label{font-size:.68rem;font-weight:500;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;display:flex;align-items:center;gap:.75rem;}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--accent-light);opacity:.4;}
+.fg{display:flex;flex-direction:column;gap:12px;margin-bottom:1.5rem;}
+.field{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:.68rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);}
+.fi{font-family:var(--sans);font-size:.9rem;font-weight:300;color:var(--dark);background:#fff;border:1px solid var(--line);padding:.65rem .85rem;outline:none;transition:border-color .2s;width:100%;}
+.fi:focus{border-color:var(--accent);}
+select.fi{cursor:pointer;}
+textarea.fi{min-height:75px;resize:vertical;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fn{font-size:.75rem;color:var(--mid);opacity:.75;margin-top:2px;line-height:1.5;}
+
+/* BOTÕES */
+.btn{font-family:var(--sans);font-size:.77rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;padding:.65rem 1.6rem;border:1px solid var(--dark);background:var(--dark);color:var(--off-white);cursor:pointer;transition:background .2s;}
+.btn:hover{background:var(--accent);border-color:var(--accent);}
+.btn:disabled{opacity:.35;cursor:not-allowed;}
+.btn-g{background:transparent;color:var(--dark);}
+.btn-g:hover{background:var(--dark);color:var(--off-white);}
+.brow{display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;margin-top:1rem;}
+
+/* LOADING */
+.loading{display:none;align-items:center;gap:10px;font-size:.88rem;color:var(--mid);padding:1.25rem 0;}
+.dots span{width:6px;height:6px;border-radius:50%;background:var(--cor);display:inline-block;animation:bc 1.1s infinite;margin-right:3px;}
+.dots span:nth-child(2){animation-delay:.18s;}
+.dots span:nth-child(3){animation-delay:.36s;}
+@keyframes bc{0%,80%,100%{transform:translateY(0);opacity:.35}40%{transform:translateY(-6px);opacity:1}}
+
+/* RESULTADO — ROTEIRO */
+.roteiro-sec{display:none;margin-top:2rem;}
+.roteiro-header{background:var(--dark);padding:1.25rem 1.5rem;margin-bottom:0;}
+.roteiro-empresa{font-family:var(--serif);font-size:1.35rem;font-weight:300;color:#fff;margin-bottom:4px;}
+.roteiro-meta{font-size:.78rem;color:var(--accent-light);}
+.roteiro-alerta{background:var(--note-bg);border:1px solid var(--note-border);padding:.75rem 1rem;font-size:.82rem;color:var(--note-color);line-height:1.6;border-top:none;}
+
+/* BLOCOS DO ROTEIRO */
+.bloco{border:1px solid var(--line);border-top:none;background:#fff;}
+.bloco-hdr{padding:.65rem 1rem;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
+.bloco-hdr:hover{background:rgba(139,111,78,.03);}
+.bloco-titulo{display:flex;align-items:center;gap:.6rem;}
+.bloco-num{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;}
+.bloco-nome{font-size:.88rem;font-weight:500;color:var(--dark);}
+.bloco-dur{font-size:.72rem;color:var(--mid);}
+.bloco-fw{font-size:.65rem;font-weight:500;padding:2px 7px;border-radius:8px;border:1px solid;}
+.fw-spin{background:rgba(83,74,183,.08);border-color:rgba(83,74,183,.25);color:var(--spin);}
+.fw-nepq{background:rgba(15,110,86,.08);border-color:rgba(15,110,86,.25);color:var(--nepq);}
+.fw-spiced{background:rgba(133,79,11,.08);border-color:rgba(133,79,11,.25);color:var(--spiced);}
+.fw-multi{background:rgba(153,60,29,.08);border-color:rgba(153,60,29,.25);color:var(--cor);}
+.bloco-body{padding:.85rem 1rem;display:none;}
+.bloco-body.open{display:block;}
+.bloco-chevron{font-size:.75rem;color:var(--mid);transition:transform .2s;}
+.bloco-chevron.open{transform:rotate(180deg);}
+
+/* PERGUNTAS */
+.pergs-list{display:flex;flex-direction:column;gap:8px;}
+.perg-item{border:1px solid var(--line);border-radius:2px;}
+.perg-item-hdr{display:flex;align-items:flex-start;gap:.65rem;padding:.6rem .85rem;background:rgba(139,111,78,.02);}
+.perg-fw-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+.perg-fw-dot.spin{background:var(--spin);}
+.perg-fw-dot.nepq{background:var(--nepq);}
+.perg-fw-dot.spiced{background:var(--spiced);}
+.perg-texto{font-size:.88rem;color:var(--dark);line-height:1.6;flex:1;}
+.perg-nota{font-size:.75rem;color:var(--mid);font-style:italic;padding:.35rem .85rem .5rem 1.8rem;line-height:1.5;}
+.perg-anotacao{width:100%;border:none;border-top:1px solid var(--line);padding:.45rem .85rem;font-family:var(--sans);font-size:.82rem;color:var(--mid);background:transparent;outline:none;resize:none;min-height:32px;}
+.perg-anotacao::placeholder{color:var(--accent-light);opacity:.5;}
+
+/* HIPÓTESES */
+.hipotese-item{padding:.65rem .9rem;border:1px solid var(--line);margin-bottom:6px;background:rgba(153,60,29,.03);}
+.hipotese-num{font-size:.65rem;font-weight:600;color:var(--cor);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.hipotese-txt{font-size:.88rem;color:var(--dark);line-height:1.6;}
+
+/* OBJEÇÕES */
+.obj-item{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--line);margin-bottom:6px;}
+.obj-left{padding:.6rem .85rem;border-right:1px solid var(--line);background:rgba(153,60,29,.04);}
+.obj-right{padding:.6rem .85rem;background:#fff;}
+.obj-lbl{font-size:.63rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px;}
+.obj-left .obj-lbl{color:var(--cor);}
+.obj-right .obj-lbl{color:var(--nepq);}
+.obj-txt{font-size:.82rem;color:var(--dark);line-height:1.55;}
+
+/* CHECKLIST */
+.check-item{display:flex;align-items:flex-start;gap:.65rem;padding:.55rem .85rem;border-bottom:1px solid var(--line);}
+.check-item:last-child{border-bottom:none;}
+.check-box{width:16px;height:16px;border:1.5px solid var(--accent-light);border-radius:2px;flex-shrink:0;margin-top:2px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.check-box.checked{background:var(--nepq);border-color:var(--nepq);}
+.check-box.checked::after{content:"✓";color:#fff;font-size:10px;font-weight:700;}
+.check-txt{font-size:.85rem;color:var(--dark);line-height:1.55;flex:1;}
+
+/* PRÓXIMO PASSO */
+.proximo-box{padding:1rem 1.1rem;background:var(--dark);}
+.proximo-titulo{font-size:.72rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--accent-light);margin-bottom:.5rem;}
+.proximo-txt{font-size:.92rem;color:#fff;line-height:1.65;}
+
+/* AÇÕES */
+.action-row{display:flex;gap:.75rem;margin-top:1rem;flex-wrap:wrap;}
+.smsg{font-size:.82rem;color:var(--success-color);background:var(--success-bg);border:1px solid #b8e0c5;padding:.6rem .9rem;margin-top:.5rem;display:none;}
+
+/* IMPRESSÃO */
+@media print{
+  body{padding:0;background:#fff;}
+  .form-sec,.action-row,.hdr,.footer,.bloco-hdr{display:block !important;}
+  .bloco-body{display:block !important;}
+  .btn,.btn-g{display:none;}
+  .roteiro-sec{display:block !important;}
+  .bloco-chevron{display:none;}
+}
+
+.footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;}
+.flogo{font-family:var(--serif);font-size:1rem;font-weight:300;letter-spacing:.1em;text-transform:uppercase;color:var(--mid);}
+.fcopy{font-size:.72rem;color:var(--mid);font-weight:300;}
+@media(max-width:560px){.fr{grid-template-columns:1fr;}.obj-item{grid-template-columns:1fr;}.obj-left{border-right:none;border-bottom:1px solid var(--line);}}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="hdr">
+    <div class="badge">Módulo 3 — Diagnóstico Consultivo — Preparação</div>
+    <h1 class="hdr-title">Roteiro de <em>Diagnóstico.</em></h1>
+    <p class="hdr-sub">Preencha o briefing do lead em 3 minutos. O agente gera o roteiro completo da call — com perguntas calibradas, hipóteses de problema e como conduzir objeções.</p>
+  </div>
+
+  <!-- FORMULÁRIO -->
+  <div class="form-sec" id="form-sec">
+    <div class="sec-label">Briefing do lead</div>
+
+    <div class="fg">
+      <!-- Bloco 1 — Identificação -->
+      <div class="fr">
+        <div class="field">
+          <div class="fl">Nome do lead</div>
+          <input class="fi" id="f-nome" type="text" placeholder="Nome completo">
+        </div>
+        <div class="field">
+          <div class="fl">Empresa</div>
+          <input class="fi" id="f-empresa" type="text" placeholder="Nome da empresa">
+        </div>
+      </div>
+      <div class="fr">
+        <div class="field">
+          <div class="fl">Cargo / papel na decisão</div>
+          <input class="fi" id="f-cargo" type="text" placeholder="Ex: CEO, Head Comercial, COO">
+        </div>
+        <div class="field">
+          <div class="fl">Setor</div>
+          <input class="fi" id="f-setor" type="text" placeholder="Ex: Tecnologia, Saúde, Varejo">
+        </div>
+      </div>
+      <div class="fr">
+        <div class="field">
+          <div class="fl">Porte da empresa</div>
+          <select class="fi" id="f-porte">
+            <option value="">Selecione...</option>
+            <option value="1-5 funcionários">1–5 funcionários</option>
+            <option value="6-20 funcionários">6–20 funcionários</option>
+            <option value="21-50 funcionários">21–50 funcionários</option>
+            <option value="51-200 funcionários">51–200 funcionários</option>
+            <option value="mais de 200 funcionários">Mais de 200 funcionários</option>
+          </select>
+        </div>
+        <div class="field">
+          <div class="fl">Temperatura do lead</div>
+          <select class="fi" id="f-temp">
+            <option value="morno — já interagiu com conteúdo ou indicação">Morno — interagiu mas ainda não conversou</option>
+            <option value="frio — nunca interagiu com a marca">Frio — sem contato anterior</option>
+            <option value="quente — já conversou e demonstrou interesse">Quente — já demonstrou interesse direto</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Bloco 2 — Contexto -->
+      <div class="field">
+        <div class="fl">Como chegou até você?</div>
+        <select class="fi" id="f-origem">
+          <option value="">Selecione...</option>
+          <option value="Indicação">Indicação</option>
+          <option value="Instagram / conteúdo">Instagram / conteúdo</option>
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="Google / busca">Google / busca</option>
+          <option value="Evento / networking">Evento / networking</option>
+          <option value="Prospecção ativa">Prospecção ativa</option>
+          <option value="E-mail marketing">E-mail marketing</option>
+          <option value="WhatsApp direto">WhatsApp direto</option>
+        </select>
+      </div>
+      <div class="field">
+        <div class="fl">O que motivou o contato? O que ele disse ou escreveu?</div>
+        <textarea class="fi" id="f-motivo" placeholder="Ex: Comentou no post sobre previsibilidade de vendas dizendo 'faz falta isso aqui'. Mencionou que o time comercial não tem processo definido."></textarea>
+        <div class="fn">Copie literalmente o que ele escreveu se possível. Quanto mais específico, mais preciso o roteiro.</div>
+      </div>
+
+      <!-- Bloco 3 — Produto e histórico -->
+      <div class="fr">
+        <div class="field">
+          <div class="fl">Produto ou serviço a apresentar</div>
+          <input class="fi" id="f-produto" type="text" placeholder="Ex: Mentoria comercial 6 meses, Diagnóstico de funil...">
+        </div>
+        <div class="field">
+          <div class="fl">Ticket / ciclo de venda</div>
+          <select class="fi" id="f-ticket">
+            <option value="high ticket, ciclo longo (30+ dias)">High ticket — ciclo longo (30+ dias)</option>
+            <option value="high ticket, ciclo curto (menos de 30 dias)">High ticket — ciclo curto (menos de 30 dias)</option>
+            <option value="low ticket, ciclo curto">Low ticket — ciclo curto</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <div class="fl">O que você já sabe sobre os problemas dele? (opcional)</div>
+        <textarea class="fi" id="f-sabe" placeholder="Ex: Ele mencionou que o CRM não reflete a realidade. Tem 3 vendedores sem processo padrão. Já tentou treinamento antes sem resultado." style="min-height:65px;"></textarea>
+        <div class="fn">Informações do briefing, redes sociais ou conversas anteriores. Evita perguntas desnecessárias de Situação.</div>
+      </div>
+      <div class="field">
+        <div class="fl">Seu nome</div>
+        <input class="fi" id="f-vendedor" type="text" placeholder="Como o lead te chama">
+      </div>
+    </div>
+
+    <div class="loading" id="ld">
+      <div class="dots"><span></span><span></span><span></span></div>
+      <span id="ld-msg">Analisando o perfil do lead...</span>
+    </div>
+    <div class="brow">
+      <button class="btn" id="btn-gerar" onclick="gerarRoteiro()">Gerar roteiro →</button>
+    </div>
+  </div>
+
+  <!-- ROTEIRO -->
+  <div class="roteiro-sec" id="roteiro-sec">
+    <div class="roteiro-header">
+      <div class="roteiro-empresa" id="r-empresa">—</div>
+      <div class="roteiro-meta" id="r-meta">—</div>
+    </div>
+    <div class="roteiro-alerta" id="r-alerta"></div>
+
+    <!-- BLOCOS DO ROTEIRO — gerados dinamicamente -->
+    <div id="roteiro-blocos"></div>
+
+    <div class="action-row">
+      <button class="btn" onclick="imprimirRoteiro()">Imprimir / salvar PDF</button>
+      <button class="btn btn-g" onclick="copiarRoteiro()">Copiar roteiro</button>
+      <button class="btn btn-g" onclick="novoRoteiro()">Novo roteiro</button>
+    </div>
+    <div class="smsg" id="smsg">✓ Roteiro copiado.</div>
+  </div>
+
+  <div class="footer">
+    <span class="flogo">Fundamentos</span>
+    <span class="fcopy">Diagnóstico Consultivo — Preparação de Call</span>
+  </div>
+</div>
+
+<script>
+var dadosRoteiro=null;
+
+function gV(id){var e=document.getElementById(id);return e?e.value.trim():"";}
+function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+function delay(ms){return new Promise(function(r){setTimeout(r,ms);});}
+
+async function callProxy(system,userMsg,maxTokens){
+  try{
+    var r=await fetch("/api/claude",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system:system,userMsg:userMsg,maxTokens:maxTokens||2000})});
+    if(!r.ok)return null;
+    var d=await r.json();return d.text||null;
+  }catch(e){return null;}
+}
+
+async function gerarRoteiro(){
+  var nome=gV("f-nome"),empresa=gV("f-empresa"),cargo=gV("f-cargo"),setor=gV("f-setor");
+  var porte=gV("f-porte"),temp=gV("f-temp"),origem=gV("f-origem");
+  var motivo=gV("f-motivo"),produto=gV("f-produto"),ticket=gV("f-ticket");
+  var sabe=gV("f-sabe"),vendedor=gV("f-vendedor")||"você";
+
+  if(!nome||!empresa||!cargo||!setor){
+    alert("Preencha pelo menos nome, empresa, cargo e setor do lead.");return;
+  }
+
+  document.getElementById("btn-gerar").disabled=true;
+  var ldEl=document.getElementById("ld");
+  ldEl.style.display="flex";
+  var msgs=["Analisando o perfil do lead...","Calibrando perguntas para este setor...","Estruturando o roteiro SPIN+NEPQ+SPICED...","Gerando hipóteses de problema...","Preparando objeções prováveis..."];
+  var mi=0;
+  var iv=setInterval(function(){mi=(mi+1)%msgs.length;document.getElementById("ld-msg").textContent=msgs[mi];},1800);
+
+  var system=`Você é um expert em diagnóstico consultivo do Método Fundamentos (SPIN + NEPQ + SPICED). Gere um roteiro de call de diagnóstico completo e personalizado para o vendedor usar em tempo real.
+
+O roteiro deve ser prático e operacional — perguntas prontas para usar, não teoria.
+
+FRAMEWORKS INTEGRADOS:
+- SPIN: Situação (contexto) → Problema (fricção) → Implicação (custo/risco) → Need-Payoff (resultado desejado)
+- NEPQ: perguntas de consciência e consequência emocional — aprofundam sem pressionar
+- SPICED: valida Situação, Dor, Impacto, Critical Event, Decision — protege o pipeline
+
+REGRAS DE OURO:
+- Menos Situação: máximo 4 perguntas — se o vendedor já sabe algo, não pergunte de novo
+- Need-Payoff só depois de P+I sólidos — não antes
+- NEPQ na Implicação: "o que acontece se nada mudar?" ativa urgência real
+- SPICED no fechamento: confirmar prioridade, autoridade e próximo passo
+
+Responda APENAS com JSON válido, sem markdown:
+{
+  "alerta_preparacao": "string — 1 insight crítico sobre este perfil específico que o vendedor precisa saber antes de entrar na call",
+  "hipoteses_problema": [
+    {"numero": 1, "hipotese": "string — problema mais provável para este setor/cargo", "por_que": "string — razão"},
+    {"numero": 2, "hipotese": "string", "por_que": "string"},
+    {"numero": 3, "hipotese": "string", "por_que": "string"}
+  ],
+  "abertura": {
+    "script": "string — frase de abertura personalizada para este lead, com frame e pedido de permissão"
+  },
+  "perguntas_situacao": [
+    {"texto": "string", "framework": "SPIN", "nota": "string — por que esta pergunta aqui"}
+  ],
+  "perguntas_problema": [
+    {"texto": "string", "framework": "SPIN", "nota": "string"},
+    {"texto": "string", "framework": "NEPQ", "nota": "string"}
+  ],
+  "perguntas_implicacao": [
+    {"texto": "string", "framework": "SPIN", "nota": "string"},
+    {"texto": "string", "framework": "NEPQ", "nota": "string"},
+    {"texto": "string", "framework": "SPIN", "nota": "string"}
+  ],
+  "perguntas_needpayoff": [
+    {"texto": "string", "framework": "SPIN", "nota": "string"},
+    {"texto": "string", "framework": "NEPQ", "nota": "string"}
+  ],
+  "checklist_spiced": [
+    "string — critério a confirmar antes de encerrar",
+    "string",
+    "string",
+    "string",
+    "string"
+  ],
+  "objecoes_provaveis": [
+    {"objecao": "string", "como_conduzir": "string"},
+    {"objecao": "string", "como_conduzir": "string"},
+    {"objecao": "string", "como_conduzir": "string"}
+  ],
+  "proximo_passo_recomendado": "string — o próximo passo ideal para este ticket/ciclo com linguagem pronta para usar"
+}`;
+
+  var userMsg=`Lead: ${nome} — ${cargo} em ${empresa}
+Setor: ${setor} | Porte: ${porte||"não informado"} | Temperatura: ${temp}
+Como chegou: ${origem||"não informado"}
+O que motivou o contato: ${motivo||"não informado"}
+Produto/serviço: ${produto||"não informado"} | Ticket/ciclo: ${ticket}
+O que já sei sobre os problemas: ${sabe||"nada além do acima"}
+Nome do vendedor: ${vendedor}`;
+
+  var raw=await callProxy(system,userMsg,2500);
+  clearInterval(iv);
+  ldEl.style.display="none";
+  document.getElementById("btn-gerar").disabled=false;
+
+  var dados=null;
+  if(raw){
+    try{dados=JSON.parse(raw.replace(/```json|```/g,"").trim());}
+    catch(e){var m=raw.match(/\{[\s\S]*\}/);if(m)try{dados=JSON.parse(m[0]);}catch(e2){}}
+  }
+
+  if(!dados){alert("Erro ao gerar o roteiro. Tente novamente.");return;}
+  dadosRoteiro=dados;
+
+  renderRoteiro(dados,nome,empresa,cargo,setor,produto,vendedor,ticket);
+  document.getElementById("form-sec").style.display="none";
+  document.getElementById("roteiro-sec").style.display="block";
+  document.getElementById("roteiro-sec").scrollIntoView({behavior:"smooth"});
+}
+
+function renderRoteiro(d,nome,empresa,cargo,setor,produto,vendedor,ticket){
+  // Header
+  document.getElementById("r-empresa").textContent=nome+" — "+cargo+" | "+empresa;
+  document.getElementById("r-meta").textContent=setor+" · "+produto+" · "+ticket;
+
+  // Alerta
+  if(d.alerta_preparacao){
+    document.getElementById("r-alerta").innerHTML="<strong>⚡ Antes de entrar na call:</strong> "+esc(d.alerta_preparacao);
+  }
+
+  var html="";
+
+  // BLOCO 0 — HIPÓTESES
+  html+=blocoHTML("0","1A1814","Hipóteses de problema","Antes de começar","multi",
+    renderHipoteses(d.hipoteses_problema||[])
+  );
+
+  // BLOCO 1 — ABERTURA
+  html+=blocoHTML("1",d.abertura?"993C1D":"6B6760","Abertura","2–4 min","multi",
+    '<div style="padding:.6rem .85rem;background:var(--note-bg);border:1px solid var(--note-border);font-size:.88rem;color:var(--dark);line-height:1.65;font-style:italic;">'+esc((d.abertura||{}).script||"")+'</div>'
+  ,true);
+
+  // BLOCO 2 — SITUAÇÃO
+  html+=blocoHTML("2","534AB7","Situação (S)","3–6 min","spin",
+    renderPergs(d.perguntas_situacao||[])
+  );
+
+  // BLOCO 3 — PROBLEMA
+  html+=blocoHTML("3","993C1D","Problema (P)","6–12 min","multi",
+    renderPergs(d.perguntas_problema||[])
+  ,true);
+
+  // BLOCO 4 — IMPLICAÇÃO
+  html+=blocoHTML("4","854F0B","Implicação (I)","8–15 min","spiced",
+    renderPergs(d.perguntas_implicacao||[])
+  ,true);
+
+  // BLOCO 5 — NEED-PAYOFF
+  html+=blocoHTML("5","0F6E56","Need-Payoff (N)","6–10 min","nepq",
+    renderPergs(d.perguntas_needpayoff||[])
+  ,true);
+
+  // BLOCO 6 — CHECKLIST SPICED
+  html+=blocoHTML("6","854F0B","Checklist SPICED — antes de encerrar","3–5 min","spiced",
+    renderChecklist(d.checklist_spiced||[])
+  );
+
+  // BLOCO 7 — OBJEÇÕES
+  html+=blocoHTML("7","993C1D","Objeções prováveis","referência","multi",
+    renderObjecoes(d.objecoes_provaveis||[])
+  );
+
+  // PRÓXIMO PASSO
+  html+='<div class="proximo-box" style="border:1px solid var(--line);border-top:none;"><div class="proximo-titulo">Próximo passo recomendado</div><div class="proximo-txt">'+esc(d.proximo_passo_recomendado||"")+'</div></div>';
+
+  document.getElementById("roteiro-blocos").innerHTML=html;
+}
+
+function blocoHTML(num,cor,nome,dur,fw,conteudo,aberto){
+  var fwCls=fw==="spin"?"fw-spin":fw==="nepq"?"fw-nepq":fw==="spiced"?"fw-spiced":"fw-multi";
+  var fwLabel=fw==="spin"?"SPIN":fw==="nepq"?"NEPQ":fw==="spiced"?"SPICED":"SPIN+NEPQ+SPICED";
+  var bodyOpen=aberto?"open":"";
+  var chevronOpen=aberto?"open":"";
+  return '<div class="bloco">'+
+    '<div class="bloco-hdr" onclick="toggleBloco(this)">'+
+      '<div class="bloco-titulo">'+
+        '<div class="bloco-num" style="background:#'+cor+'">'+num+'</div>'+
+        '<span class="bloco-nome">'+esc(nome)+'</span>'+
+      '</div>'+
+      '<div style="display:flex;align-items:center;gap:.5rem;">'+
+        '<span class="bloco-dur">'+esc(dur)+'</span>'+
+        '<span class="bloco-fw '+fwCls+'">'+fwLabel+'</span>'+
+        '<span class="bloco-chevron '+chevronOpen+'">▾</span>'+
+      '</div>'+
+    '</div>'+
+    '<div class="bloco-body '+bodyOpen+'">'+conteudo+'</div>'+
+  '</div>';
+}
+
+function toggleBloco(hdr){
+  var body=hdr.nextElementSibling;
+  var chevron=hdr.querySelector(".bloco-chevron");
+  body.classList.toggle("open");
+  chevron.classList.toggle("open");
+}
+
+function renderHipoteses(hipoteses){
+  if(!hipoteses.length)return"";
+  var html='<div style="font-size:.8rem;color:var(--mid);margin-bottom:.75rem;line-height:1.55;">Chegue com estas hipóteses em mente — use-as para formular perguntas de Problema mais precisas, não para afirmar.</div>';
+  hipoteses.forEach(function(h){
+    html+='<div class="hipotese-item"><div class="hipotese-num">Hipótese '+h.numero+'</div><div class="hipotese-txt">'+esc(h.hipotese)+'<span style="color:var(--mid);font-size:.82rem;"> — '+esc(h.por_que)+'</span></div></div>';
+  });
+  return html;
+}
+
+function renderPergs(pergs){
+  if(!pergs.length)return"";
+  var html='<div class="pergs-list">';
+  pergs.forEach(function(p){
+    var fw=(p.framework||"SPIN").toLowerCase();
+    var fwCls=fw==="nepq"?"nepq":fw==="spiced"?"spiced":"spin";
+    html+='<div class="perg-item">'+
+      '<div class="perg-item-hdr">'+
+        '<div class="perg-fw-dot '+fwCls+'"></div>'+
+        '<div class="perg-texto">'+esc(p.texto)+'</div>'+
+      '</div>'+
+      (p.nota?'<div class="perg-nota">'+esc(p.nota)+'</div>':'')+
+      '<textarea class="perg-anotacao" placeholder="Anotação da resposta..."></textarea>'+
+    '</div>';
+  });
+  html+='</div>';
+  return html;
+}
+
+function renderChecklist(items){
+  if(!items.length)return"";
+  var html='<div style="font-size:.8rem;color:var(--mid);margin-bottom:.75rem;">Marque cada item conforme confirmar. Só avance se tiver clareza sobre todos.</div>';
+  items.forEach(function(item,i){
+    html+='<div class="check-item">'+
+      '<div class="check-box" id="chk-'+i+'" onclick="toggleCheck(this)"></div>'+
+      '<span class="check-txt">'+esc(item)+'</span>'+
+    '</div>';
+  });
+  return html;
+}
+
+function renderObjecoes(objs){
+  if(!objs.length)return"";
+  var html='<div style="font-size:.8rem;color:var(--mid);margin-bottom:.75rem;line-height:1.55;">Prováveis para este perfil. Não rebata — qualifique se é real ou defensiva.</div>';
+  objs.forEach(function(o){
+    html+='<div class="obj-item">'+
+      '<div class="obj-left"><div class="obj-lbl">Objeção</div><div class="obj-txt">'+esc(o.objecao)+'</div></div>'+
+      '<div class="obj-right"><div class="obj-lbl">Como conduzir</div><div class="obj-txt">'+esc(o.como_conduzir)+'</div></div>'+
+    '</div>';
+  });
+  return html;
+}
+
+function toggleCheck(el){el.classList.toggle("checked");}
+
+function gerarTexto(){
+  if(!dadosRoteiro)return"";
+  var d=dadosRoteiro;
+  var nome=gV("f-nome"),empresa=gV("f-empresa"),cargo=gV("f-cargo");
+  var txt="ROTEIRO DE DIAGNÓSTICO — MÉTODO FUNDAMENTOS\n"+"=".repeat(48)+"\n";
+  txt+="Lead: "+nome+" — "+cargo+" | "+empresa+"\n\n";
+
+  if(d.alerta_preparacao)txt+="ANTES DE ENTRAR NA CALL\n"+d.alerta_preparacao+"\n\n";
+
+  txt+="HIPÓTESES DE PROBLEMA\n";
+  (d.hipoteses_problema||[]).forEach(function(h){txt+="  "+h.numero+". "+h.hipotese+" ("+h.por_que+")\n";});
+  txt+="\n";
+
+  txt+="ABERTURA\n"+((d.abertura||{}).script||"")+"\n\n";
+
+  txt+="SITUAÇÃO (S) — 3–6 min\n";
+  (d.perguntas_situacao||[]).forEach(function(p,i){txt+="  "+(i+1)+". "+p.texto+"\n";});
+  txt+="\n";
+
+  txt+="PROBLEMA (P) — 6–12 min\n";
+  (d.perguntas_problema||[]).forEach(function(p,i){txt+="  "+(i+1)+". ["+p.framework+"] "+p.texto+"\n";});
+  txt+="\n";
+
+  txt+="IMPLICAÇÃO (I) — 8–15 min\n";
+  (d.perguntas_implicacao||[]).forEach(function(p,i){txt+="  "+(i+1)+". ["+p.framework+"] "+p.texto+"\n";});
+  txt+="\n";
+
+  txt+="NEED-PAYOFF (N) — 6–10 min\n";
+  (d.perguntas_needpayoff||[]).forEach(function(p,i){txt+="  "+(i+1)+". ["+p.framework+"] "+p.texto+"\n";});
+  txt+="\n";
+
+  txt+="CHECKLIST SPICED — antes de encerrar\n";
+  (d.checklist_spiced||[]).forEach(function(c){txt+="  ☐ "+c+"\n";});
+  txt+="\n";
+
+  txt+="OBJEÇÕES PROVÁVEIS\n";
+  (d.objecoes_provaveis||[]).forEach(function(o){txt+="  Objeção: "+o.objecao+"\n  Como conduzir: "+o.como_conduzir+"\n\n";});
+
+  txt+="PRÓXIMO PASSO\n"+(d.proximo_passo_recomendado||"");
+  return txt;
+}
+
+function copiarRoteiro(){
+  var txt=gerarTexto();
+  navigator.clipboard.writeText(txt).then(function(){
+    var s=document.getElementById("smsg");s.style.display="block";
+    setTimeout(function(){s.style.display="none";},3500);
+  }).catch(function(){alert("Selecione e copie manualmente.");});
+}
+
+function imprimirRoteiro(){
+  // Abrir todos os blocos antes de imprimir
+  document.querySelectorAll(".bloco-body").forEach(function(b){b.classList.add("open");});
+  window.print();
+}
+
+function novoRoteiro(){
+  dadosRoteiro=null;
+  document.getElementById("form-sec").style.display="block";
+  document.getElementById("roteiro-sec").style.display="none";
+  document.getElementById("btn-gerar").disabled=false;
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+</script>
+</body>
+</html>
