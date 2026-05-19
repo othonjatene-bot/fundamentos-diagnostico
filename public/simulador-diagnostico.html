@@ -516,40 +516,68 @@ async function gerarCallReimaginada(transcricao){
   var sec=document.getElementById("reimag-section");
   sec.style.display="block";
 
-  var sys="Você é um expert em diagnóstico consultivo do Método Fundamentos (SPIN + NEPQ + SPICED). Você vai receber a transcrição de uma call de diagnóstico e deve reescrever APENAS as falas do SDR — substituindo-as pelas perguntas ideais do método, mantendo as respostas do lead exatamente como estão.\n\nPara cada turno da conversa, responda em JSON com este formato:\n{\n  \"turnos\": [\n    {\n      \"lead\": \"fala original do lead (copiar exatamente)\",\n      \"sdr_original\": \"o que o SDR disse originalmente\",\n      \"sdr_ideal\": \"como o método conduziria — a pergunta ou resposta ideal\",\n      \"framework\": \"SPIN | NEPQ | SPICED\",\n      \"etapa\": \"Situação | Problema | Implicação | Need-Payoff | Qualificação | Abertura | Fechamento\",\n      \"nota\": \"string curta explicando qual técnica foi usada e por que é mais eficaz aqui\"\n    }\n  ]\n}\n\nRegras importantes:\n- Se o SDR fez bem, mantenha sdr_ideal igual ao sdr_original e nota como 'Boa pergunta — mantida'\n- Se o SDR errou, reescreva com a pergunta ideal e explique o porquê em 1 frase\n- Não invente falas do lead — use exatamente o que está na transcrição\n- Ignore mensagens do Coach (entre colchetes)\n- Máximo 12 turnos — priorize os mais relevantes para aprendizado\n- Responda APENAS com JSON válido, sem markdown";
+  // Limpar a transcrição — remover falas do Coach para não confundir o modelo
+  var transcricaoLimpa=dadosParaAval
+    .filter(function(d){return d.tipo==="sdr"||d.tipo==="lead";})
+    .map(function(d,i){
+      return (d.tipo==="sdr"?seuNome+" (SDR)":"Lead")+": "+d.texto;
+    }).join("\n");
 
-  var raw=await callProxy(sys,"Transcrição:\n"+transcricao,2500);
+  // Dividir em duas metades para evitar truncamento
+  var linhas=transcricaoLimpa.split("\n").filter(function(l){return l.trim();});
+  var metade=Math.ceil(linhas.length/2);
+  var parte1=linhas.slice(0,metade).join("\n");
+  var parte2=linhas.slice(metade).join("\n");
+
+  var sysBase="Você é um expert em diagnóstico consultivo do Método Fundamentos (SPIN + NEPQ + SPICED).\n\nAnalise os turnos da call e reescreva as falas do SDR com o método ideal.\n\nResponda APENAS com JSON válido sem markdown:\n{\"turnos\":[{\"lead\":\"fala do lead ou vazio se SDR abre\",\"sdr_original\":\"o que o SDR disse\",\"sdr_ideal\":\"a pergunta ideal do método\",\"framework\":\"SPIN ou NEPQ ou SPICED\",\"etapa\":\"Abertura ou Situação ou Problema ou Implicação ou Need-Payoff ou Qualificação ou Fechamento\",\"nota\":\"1 frase: qual técnica usou e por que é mais eficaz\"}]}\n\nRegras:\n- Se o SDR foi excelente, repita sdr_ideal igual ao sdr_original e nota='Boa pergunta — mantida'\n- Não invente falas do lead — copie exatamente\n- Máximo 6 turnos por resposta — priorize os mais relevantes para aprendizado";
+
+  var [raw1,raw2]=await Promise.all([
+    parte1?callProxy(sysBase,"Transcrição (primeira parte):\n"+parte1,1500):Promise.resolve(null),
+    parte2?callProxy(sysBase,"Transcrição (segunda parte):\n"+parte2,1500):Promise.resolve(null)
+  ]);
 
   document.getElementById("reimag-loading").style.display="none";
 
-  var dados=null;
-  if(raw){try{dados=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch(e){}}
+  // Parse seguro das duas partes
+  function parseTurnos(raw){
+    if(!raw)return[];
+    try{
+      var s=raw.replace(/```json|```/g,"").trim();
+      // Tenta encontrar o JSON mesmo que haja texto antes/depois
+      var m=s.match(/\{[\s\S]*\}/);
+      if(m){var d=JSON.parse(m[0]);return d.turnos||[];}
+    }catch(e){}
+    return[];
+  }
 
-  if(!dados||!dados.turnos||!dados.turnos.length){
-    document.getElementById("reimag-content").innerHTML='<div style="font-size:.85rem;color:var(--mid);padding:.75rem;">Não foi possível gerar a call reimaginada.</div>';
+  var turnos1=parseTurnos(raw1);
+  var turnos2=parseTurnos(raw2);
+  var todosTurnos=turnos1.concat(turnos2);
+
+  if(!todosTurnos.length){
+    document.getElementById("reimag-content").innerHTML='<div style="font-size:.85rem;color:var(--mid);padding:.75rem;border:1px solid var(--line);background:#fff;">Não foi possível gerar a call reimaginada. Verifique se a simulação teve pelo menos 3 turnos completos.</div>';
     return;
   }
 
   var html='<div class="reimag-intro">Abaixo está a conversa reescrita com o <strong>Método Fundamentos</strong>. As respostas do lead são mantidas exatamente como ocorreram. Apenas as perguntas do SDR são reimaginadas — mostrando o contraste entre o que foi dito e o que o método conduziria.</div>';
 
-  dados.turnos.forEach(function(t){
-    var fwCls=t.framework==="NEPQ"?"nepq":t.framework==="SPICED"?"spiced":"spin";
-    var igualOriginal=t.sdr_ideal&&t.sdr_original&&t.sdr_ideal.trim()===t.sdr_original.trim();
+  todosTurnos.forEach(function(t,idx){
+    if(!t||(!t.sdr_original&&!t.sdr_ideal))return;
+    var fwCls=(t.framework||"SPIN")==="NEPQ"?"nepq":(t.framework||"SPIN")==="SPICED"?"spiced":"spin";
+    var orig=(t.sdr_original||"").trim();
+    var ideal=(t.sdr_ideal||"").trim();
+    var igualOriginal=orig&&ideal&&orig===ideal;
 
     html+='<div class="reimag-turn">';
-    // Fala do lead
-    if(t.lead){
+    if(t.lead&&t.lead.trim()){
       html+='<div class="reimag-lead"><div class="reimag-lead-lbl">Lead</div>'+esc(t.lead)+'</div>';
     }
-    // SDR original (só mostra se diferente do ideal)
-    if(t.sdr_original&&!igualOriginal){
-      html+='<div class="reimag-sdr-orig"><span>'+esc(t.sdr_original)+'</span></div>';
+    if(orig&&!igualOriginal){
+      html+='<div class="reimag-sdr-orig"><span>'+esc(orig)+'</span></div>';
     }
-    // SDR ideal
-    if(t.sdr_ideal){
-      html+='<div class="reimag-sdr-ideal"><span>'+esc(t.sdr_ideal)+'</span></div>';
+    if(ideal){
+      html+='<div class="reimag-sdr-ideal"><span>'+esc(ideal)+'</span></div>';
     }
-    // Nota de framework
     if(t.nota){
       html+='<div class="reimag-nota"><span class="reimag-nota-fw '+fwCls+'">'+(t.framework||"SPIN")+(t.etapa?" · "+t.etapa:"")+'</span><span>'+esc(t.nota)+'</span></div>';
     }
@@ -557,7 +585,7 @@ async function gerarCallReimaginada(transcricao){
   });
 
   document.getElementById("reimag-content").innerHTML=html;
-  window._reimagData=dados;
+  window._reimagData={turnos:todosTurnos};
 }
 
 function renderAvaliacao(aval,transcricao){
