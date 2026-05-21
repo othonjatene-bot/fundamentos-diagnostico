@@ -139,7 +139,7 @@ textarea.fi{min-height:80px;resize:vertical;}
   <div class="steps">
     <div class="step"><div class="sn active" id="sn1">1</div><span class="sl active" id="sl1">Contexto</span></div>
     <div class="sc"></div>
-    <div class="step"><div class="sn pending" id="sn2">2</div><span class="sl" id="sl2">Diagnóstico</span></div>
+    <div class="step"><div class="sn pending" id="sn2">2</div><span class="sl" id="sl2">Confirmar</span></div>
     <div class="sc"></div>
     <div class="step"><div class="sn pending" id="sn3">3</div><span class="sl" id="sl3">Solução</span></div>
     <div class="sc"></div>
@@ -172,31 +172,46 @@ textarea.fi{min-height:80px;resize:vertical;}
           <input class="fi" id="c-preco" type="text" placeholder="Ex: R$ 18.000 em 6x ou R$ 2.500/mês">
         </div>
       </div>
-    </div>
-    <div class="brow"><button class="btn" onclick="ir(2)">Próximo →</button></div>
-  </div>
-
-  <!-- FASE 2 — DIAGNÓSTICO -->
-  <div class="fase" id="f2">
-    <div class="fase-label">Fase 2 — O que foi diagnosticado</div>
-    <div class="fg">
       <div class="field">
-        <div class="fl">Dores principais — nas palavras do cliente</div>
-        <textarea class="fi" id="d-dores" placeholder="Ex: 'Nosso time não tem previsibilidade. Cada vendedor faz de um jeito. O CRM não reflete a realidade.' Use as palavras que o próprio cliente usou."></textarea>
-        <div class="fn">Quanto mais literal, mais o cliente vai se reconhecer na proposta.</div>
-      </div>
-      <div class="field">
-        <div class="fl">Impacto de não agir — o que ele verbalizou</div>
-        <textarea class="fi" id="d-impacto" placeholder="Ex: 'Se isso continuar, vou perder mais 2-3 vendedores. Estimei uns R$40k/mês em conversões perdidas.' Inclua números se o cliente os mencionou." style="min-height:65px;"></textarea>
-      </div>
-      <div class="field">
-        <div class="fl">Tentativas anteriores — o que já foi tentado</div>
-        <textarea class="fi" id="d-tentativas" placeholder="Ex: Já trocaram de CRM 2 vezes. Fizeram um treinamento há 6 meses, sem resultado. Contrataram um gerente comercial que não deu certo." style="min-height:65px;"></textarea>
-        <div class="fn">Essencial para o bloco Construct — mostra por que o caminho proposto é diferente.</div>
+        <div class="fl">Transcrição da reunião de diagnóstico</div>
+        <textarea class="fi" id="c-transcricao" style="min-height:160px;" placeholder="Cole aqui a transcrição da call de diagnóstico. O agente vai extrair automaticamente as dores, impactos e tentativas anteriores — nas palavras do próprio cliente." oninput="updTransChar()"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+          <div class="fn">Aceita qualquer formato — Otter, Fireflies, Loom ou texto manual.</div>
+          <span style="font-size:11px;color:var(--accent-light);" id="trans-cc">0 caracteres</span>
+        </div>
       </div>
     </div>
     <div class="brow">
-      <button class="btn" onclick="ir(3)">Próximo →</button>
+      <button class="btn" id="btn-extrair" onclick="extrairDiagnostico()">Extrair diagnóstico →</button>
+    </div>
+    <div class="loading" id="ld-extrair"><div class="dots"><span></span><span></span><span></span></div><span id="ld-extrair-msg">Lendo a transcrição...</span></div>
+  </div>
+
+  <!-- FASE 2 — DIAGNÓSTICO EXTRAÍDO -->
+  <div class="fase" id="f2">
+    <div class="fase-label">Fase 2 — Confirme o diagnóstico extraído</div>
+    <div style="padding:.7rem 1rem;background:var(--note-bg);border:1px solid var(--note-border);margin-bottom:1rem;font-size:.82rem;color:var(--note-color);line-height:1.6;">
+      <strong>Extraído da transcrição.</strong> Revise e ajuste se necessário — cada campo usa as palavras do próprio cliente para que ele se reconheça na proposta.
+    </div>
+    <div class="fg">
+      <div class="field">
+        <div class="fl">Dores principais — nas palavras do cliente</div>
+        <textarea class="fi" id="d-dores" style="min-height:100px;"></textarea>
+        <div class="fn">Quanto mais literal, mais o cliente vai se reconhecer no bloco Diagnose.</div>
+      </div>
+      <div class="field">
+        <div class="fl">Impacto de não agir — o que ele verbalizou</div>
+        <textarea class="fi" id="d-impacto" style="min-height:75px;"></textarea>
+        <div class="fn">Inclui números e consequências mencionados pelo cliente.</div>
+      </div>
+      <div class="field">
+        <div class="fl">Tentativas anteriores — o que já foi tentado</div>
+        <textarea class="fi" id="d-tentativas" style="min-height:65px;"></textarea>
+        <div class="fn">Essencial para o Construct — mostra por que o caminho proposto é diferente do que não funcionou.</div>
+      </div>
+    </div>
+    <div class="brow">
+      <button class="btn" onclick="ir(3)">Confirmar e continuar →</button>
       <button class="btn btn-g" onclick="ir(1)">← Voltar</button>
     </div>
   </div>
@@ -268,6 +283,65 @@ textarea.fi{min-height:80px;resize:vertical;}
 <script>
 var dadosProposta=null;
 var DECIDE_CORES={"D1":"534AB7","E1":"0F6E56","C":"8B6F4E","I":"854F0B","D2":"993C1D","E2":"1A1814"};
+
+function updTransChar(){
+  var v=document.getElementById("c-transcricao").value.length;
+  document.getElementById("trans-cc").textContent=v+" caracteres";
+}
+
+async function extrairDiagnostico(){
+  var transcricao=gV("c-transcricao");
+  var nome=gV("c-nome"),empresa=gV("c-empresa");
+
+  if(!nome||!empresa){alert("Preencha o nome do cliente e a empresa antes de continuar.");return;}
+  if(transcricao.length<200){alert("A transcrição está muito curta. Cole o texto completo da call de diagnóstico.");return;}
+
+  document.getElementById("btn-extrair").disabled=true;
+  var ldEl=document.getElementById("ld-extrair");
+  ldEl.style.display="flex";
+  var msgs=["Lendo a transcrição...","Extraindo dores nas palavras do cliente...","Identificando impactos verbalizados...","Mapeando tentativas anteriores..."];
+  var mi=0;
+  var iv=setInterval(function(){mi=(mi+1)%msgs.length;document.getElementById("ld-extrair-msg").textContent=msgs[mi];},1600);
+
+  var sys=`Você é um especialista em propostas consultivas do Método Fundamentos. Leia a transcrição de uma call de diagnóstico e extraia EXATAMENTE os trechos mais relevantes — nas palavras do próprio cliente, não na sua interpretação.
+
+IMPORTANTE:
+- Use as palavras literais do cliente sempre que possível — aspas quando for fala direta
+- Para dores: priorize falas emocionais e específicas do problema
+- Para impacto: priorize números, estimativas e consequências mencionadas
+- Para tentativas: o que já foi testado e não funcionou
+- Se algo não foi mencionado na call, escreva "Não mencionado na transcrição"
+
+Responda APENAS com JSON válido sem markdown:
+{"dores":"string — dores principais em 3-6 frases, nas palavras do cliente","impacto":"string — impacto de não agir em 2-4 frases com números se houver","tentativas":"string — tentativas anteriores em 2-3 frases ou 'Não mencionado na transcrição'"}`;
+
+  var raw=await callProxy(sys,"Transcrição:\n"+transcricao.slice(0,5000),600);
+
+  clearInterval(iv);
+  ldEl.style.display="none";
+  document.getElementById("btn-extrair").disabled=false;
+
+  var dados=null;
+  if(raw){
+    try{dados=JSON.parse(raw.replace(/```json|```/g,"").trim());}catch(e){
+      var m=raw.match(/\{[\s\S]*\}/);if(m)try{dados=JSON.parse(m[0]);}catch(e2){}
+    }
+  }
+
+  if(!dados){
+    // Fallback: ir para fase 2 com campos vazios para preenchimento manual
+    document.getElementById("d-dores").placeholder="Não foi possível extrair automaticamente. Preencha nas palavras do cliente.";
+    document.getElementById("d-impacto").placeholder="Preencha com o que o cliente verbalizou sobre o impacto.";
+    document.getElementById("d-tentativas").placeholder="Preencha com o que já foi tentado anteriormente.";
+    ir(2);return;
+  }
+
+  // Preencher campos com o extraído
+  document.getElementById("d-dores").value=dados.dores||"";
+  document.getElementById("d-impacto").value=dados.impacto||"";
+  document.getElementById("d-tentativas").value=dados.tentativas||"";
+  ir(2);
+}
 var DECIDE_META=[
   {key:"D1",letra:"D",nome:"Diagnose",funcao:"Reafirmar o diagnóstico",pensamento:"Ele entendeu."},
   {key:"E1",letra:"E",nome:"Envision",funcao:"Desenhar o futuro desejado",pensamento:"É isso que eu quero."},
